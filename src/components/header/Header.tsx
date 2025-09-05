@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { IoIosArrowDown } from "react-icons/io";
 import {
   DropdownMenu,
@@ -20,12 +21,15 @@ export default function Header() {
           <IoIosArrowDown className="mt-[2.2px]" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="mr-2 mt-1">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>アカウント設定</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Team</DropdownMenuItem>
-          <DropdownMenuItem>Subscription</DropdownMenuItem>
+          <DropdownMenuItem>Janusについて</DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/app/profile">プロフィール</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/auth/logout">ログアウト</Link>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
