@@ -15,14 +15,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /app 以下だけ保護
-  if (pathname.startsWith("/app")) {
-    const session = await auth0.getSession(request);
+  // セッション取得
+  const session = await auth0.getSession(request);
 
-    if (!session?.user) {
-      // 未ログインなら / にリダイレクト
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+  // ログイン済みのときの動作だけ追加
+  if (session?.user) {
+    // ルートページにアクセスしていたら /app にリダイレクト
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/app", request.url));
     }
+  }
+
+  // /app 以下は未ログインチェック
+  if (pathname.startsWith("/app") && !session?.user) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   // それ以外は放置
@@ -31,7 +37,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // _next, favicon, sitemap, robots を除いたすべてのパス
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
