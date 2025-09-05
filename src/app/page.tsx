@@ -14,10 +14,10 @@ export default async function Home() {
   }
 
   return (
-    <>
+    <main>
       <h1>Welcome, {session.user.name}!</h1>
       <p>{session.tokenSet.accessToken}</p>
       <Link href="auth/logout">logout</Link>
-    </>
+    </main>
   );
 }
