@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Header from "../components/header/Header";
-import Sidebar from "../components/sidebar/Sidebar";
+import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
+import Header from "../../components/header/Header";
+import ServerSidebar from "../../components/serverSidebar/ServerSidebar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,9 +19,10 @@ export default function RootLayout({
       <Header />
 
       {/* メインエリア */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-2 overflow-hidden">
         {/* サイドバー */}
-        <Sidebar />
+        <ServerSidebar />
+        <ChannelSidebar />
 
         {/* コンテンツ */}
         <div className="flex-1 bg-gray-200 overflow-auto p-4">{children}</div>
