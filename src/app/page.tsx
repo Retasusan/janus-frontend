@@ -4,6 +4,10 @@ import { auth0 } from "@/app/lib/auth0";
 export default async function Home() {
   const session = await auth0.getSession();
 
+  // TODO:それっぽいサイトにする
+  // 参考：https://discord.com/
+
+  // 未ログインページ
   if (!session) {
     return (
       <main>
@@ -13,6 +17,7 @@ export default async function Home() {
     );
   }
 
+  //　ログイン済みページ
   return (
     <main>
       <h1>Welcome, {session.user.name}!</h1>
