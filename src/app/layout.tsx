@@ -1,5 +1,6 @@
 import { Auth0Provider } from "@auth0/nextjs-auth0";
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -12,9 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" className="h-full">
       <Auth0Provider>
-        <body>{children}</body>
+        <body className="h-full">{children}</body>
       </Auth0Provider>
     </html>
   );
