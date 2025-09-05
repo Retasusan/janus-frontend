@@ -23,7 +23,7 @@ export default function Header() {
           山田太郎
           <IoIosArrowDown className="mt-[2.2px]" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="mr-2 mt-1">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Profile</DropdownMenuItem>
