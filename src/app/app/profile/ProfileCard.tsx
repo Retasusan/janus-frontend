@@ -18,13 +18,13 @@ export default function ProfileCard({
         </Avatar>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-          <p className="text-gray-500">@{user.sub?.split("|")[1]}</p>
+          <p className="text-gray-500">user_id: {user.sub?.split("|")[1]}</p>
         </div>
-        <div className="w-full border-t border-gray-200 pt-4">
-          <p className="text-gray-600 text-sm">
+        <div className="w-full border-t border-gray-200 pt-4 flex justify-center">
+          <div className="text-gray-600 text-sm">
             Email:{" "}
             <span className="text-gray-800 font-medium">{user.email}</span>
-          </p>
+          </div>
         </div>
         <div className="flex space-x-3 pt-4">
           <Button className="bg-blue-600 text-white hover:bg-blue-500">
