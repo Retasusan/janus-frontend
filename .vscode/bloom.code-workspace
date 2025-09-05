@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "path": ".."
+    },
+    {
+      "path": "../functions/bloom-socials",
+      "name": "Bloom Socials"
+    }
+  ],
+  "settings": {
+    "biome.enabled": true,
+    "biome.configurationPath": "biome.json"
+  },
+  "extensions": {
+    "recommendations": ["biomejs.biome", "usernamehw.errorlens"]
+  }
+}
