@@ -9,37 +9,42 @@ type Message = {
   content: string;
 };
 
-const mockMessages: Record<string, Message[]> = {
-  "1-1": [
-    { id: 1, author: "Alice", content: "こんにちは！" },
-    { id: 2, author: "Bob", content: "お疲れ様です。" },
-  ],
-  "1-2": [{ id: 3, author: "Charlie", content: "ランダムな話題" }],
-  "1-3": [{ id: 4, author: "Dave", content: "プロジェクトの進捗どうですか？" }],
-  "2-1": [{ id: 5, author: "Eve", content: "サーバー2の一般チャネルです。" }],
-  "2-2": [
-    { id: 6, author: "Frank", content: "サーバー2のランダムチャネルです。" },
-  ],
-  "2-3": [
-    {
-      id: 7,
-      author: "Grace",
-      content: "サーバー2のプロジェクトチャネルです。",
-    },
-  ],
-};
-
 export default function ChannelPage() {
   const params = useParams();
   const { serverId, channelId } = params;
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // サーバーIDとチャンネルIDでキーを作成してモックを取得
-    const key = `${serverId}-${channelId}`;
-    setMessages(mockMessages[key] || []);
+    if (!serverId || !channelId) return;
+
+    const fetchMessages = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(
+          `/api/servers/${serverId}/channels/${channelId}/messages`,
+        );
+
+        if (!res.ok)
+          throw new Error(`Failed to fetch messages (${res.status})`);
+        const data: Message[] = await res.json();
+        setMessages(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
   }, [serverId, channelId]);
+
+  if (loading) return <p className="text-gray-400">読み込み中...</p>;
+  if (error) return <p className="text-red-500">エラー: {error}</p>;
 
   return (
     <div className="p-4 flex flex-col space-y-2">
