@@ -2,11 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/lib/auth0";
 
 // GET ハンドラ
-export async function GET({
-  params,
-}: {
-  params: { server_id: string; channel_id: string };
-}) {
+export async function GET(
+  //biome-ignore lint: request is unused but required
+  req: NextRequest, // ← NextRequestは使用しないが、必須
+  { params }: { params: { server_id: string; channel_id: string } },
+) {
   const { server_id, channel_id } = params;
 
   const session = await auth0.getSession();
