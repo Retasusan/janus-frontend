@@ -1,13 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/lib/auth0";
 
-// GET ハンドラ
 export async function GET(
-  //biome-ignore lint: request is unused but required
-  req: NextRequest, // ← NextRequestは使用しないが、必須
-  { params }: { params: { server_id: string; channel_id: string } },
+  // biome-ignore lint: request is unused but required
+  req: NextRequest,
+  context: { params: { server_id: string; channel_id: string } },
 ) {
-  const { server_id, channel_id } = params;
+  const { server_id, channel_id } = await context.params;
 
   const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {
@@ -32,12 +31,11 @@ export async function GET(
   }
 }
 
-// POST ハンドラ
 export async function POST(
   req: NextRequest,
-  { params }: { params: { server_id: string; channel_id: string } },
+  context: { params: { server_id: string; channel_id: string } },
 ) {
-  const { server_id, channel_id } = params;
+  const { server_id, channel_id } = await context.params;
 
   const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {

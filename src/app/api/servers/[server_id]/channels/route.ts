@@ -3,8 +3,10 @@ import { auth0 } from "@/app/lib/auth0";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { server_id: string } },
+  context: { params: { server_id: string } },
 ) {
+  const { server_id } = await context.params;
+
   const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -12,7 +14,7 @@ export async function GET(
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/v1/servers/${params.server_id}/channels`,
+      `http://localhost:8000/api/v1/servers/${server_id}/channels`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -30,9 +32,11 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { server_id: string } },
+  context: { params: { server_id: string } },
 ) {
-  const session = await auth0.getSession(); // req を渡さない
+  const { server_id } = await context.params;
+
+  const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -41,7 +45,7 @@ export async function POST(
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/v1/servers/${params.server_id}/channels`,
+      `http://localhost:8000/api/v1/servers/${server_id}/channels`,
       {
         method: "POST",
         headers: {
