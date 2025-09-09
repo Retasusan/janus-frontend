@@ -4,6 +4,10 @@
 import { useEffect, useState } from "react";
 import { BiHash } from "react-icons/bi";
 import { IoMdAdd } from "react-icons/io";
+import CreateChannelModal from "@/components/channelContent/CreateChannelModal";
+import { CreateChannelRequest, ChannelType } from "@/types/channel";
+import { pluginRegistry } from "@/lib/pluginRegistry";
+import "@/lib/initializePlugins"; // プラグインを初期化
 
 export type Server = {
   id: number;
@@ -17,6 +21,7 @@ export type Channel = {
   id: number;
   name: string;
   serverId: number;
+  type?: ChannelType;
 };
 
 type Props = {
@@ -33,6 +38,7 @@ export default function ChannelSidebar({
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const fetchChannels = async () => {
@@ -64,16 +70,13 @@ export default function ChannelSidebar({
     fetchChannels();
   }, [server]);
 
-  const handleAddChannel = async () => {
-    const name = prompt("新しいチャンネル名を入力してください:");
-    if (!name) return;
-
+  const handleCreateChannel = async (data: CreateChannelRequest) => {
     try {
       const res = await fetch(`/api/servers/${server.id}/channels`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) throw new Error(`Channel create error ${res.status}`);
@@ -82,6 +85,7 @@ export default function ChannelSidebar({
       const channelWithServerId = {
         ...newChannel,
         serverId: server.id,
+        type: data.type,
       };
 
       setChannels((prev) => [...prev, channelWithServerId]);
@@ -107,7 +111,7 @@ export default function ChannelSidebar({
           <button
             type="button"
             className="hover:text-white"
-            onClick={handleAddChannel}
+            onClick={() => setShowCreateModal(true)}
           >
             <IoMdAdd size={16} />
           </button>
@@ -122,6 +126,9 @@ export default function ChannelSidebar({
           ) : (
             channels.map((channel) => {
               const isSelected = selectedChannel?.id === channel.id;
+              const channelType = channel.type || ChannelType.TEXT;
+              const plugin = pluginRegistry.get(channelType);
+              
               return (
                 <button
                   key={channel.id}
@@ -133,7 +140,9 @@ export default function ChannelSidebar({
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
                   }`}
                 >
-                  <BiHash className="mr-2" />
+                  <span className="mr-2" style={{ color: plugin?.meta.color || '#6b7280' }}>
+                    {plugin?.meta.icon || <BiHash />}
+                  </span>
                   {channel.name}
                 </button>
               );
@@ -141,6 +150,14 @@ export default function ChannelSidebar({
           )}
         </div>
       </div>
+
+      {/* チャンネル作成モーダル */}
+      <CreateChannelModal
+        serverId={server.id}
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateChannel}
+      />
     </div>
   );
 }
