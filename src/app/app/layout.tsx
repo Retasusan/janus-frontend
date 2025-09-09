@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
 import ChannelContent from "../../components/channelContent/ChannelContent";
 import Header from "../../components/header/Header";
@@ -25,9 +26,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [servers, setServers] = useState<Server[]>([]);
+
+  // プロファイルページかどうかを判定
+  const isProfilePage = pathname === "/app/profile";
 
   useEffect(() => {
     const fetchServers = async () => {
@@ -53,6 +58,18 @@ export default function RootLayout({
   useEffect(() => {
     setSelectedChannel(null);
   }, [selectedServer]);
+
+  // プロファイルページの場合は異なるレイアウトを使用
+  if (isProfilePage) {
+    return (
+      <div className="h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 overflow-auto">
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col">
