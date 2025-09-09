@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
+import ChannelContent from "../../components/channelContent/ChannelContent";
 import Header from "../../components/header/Header";
 import ServerSidebar from "../../components/serverSidebar/ServerSidebar";
 
@@ -13,12 +14,45 @@ export type Server = {
   url?: string;
 };
 
+export type Channel = {
+  id: number;
+  name: string;
+  serverId: number;
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [servers, setServers] = useState<Server[]>([]);
+
+  useEffect(() => {
+    const fetchServers = async () => {
+      try {
+        const res = await fetch("/api/servers", { credentials: "include" });
+        if (res.ok) {
+          const data: Server[] = await res.json();
+          setServers(data);
+          // 最初のサーバーを自動選択
+          if (data.length > 0 && !selectedServer) {
+            setSelectedServer(data[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch servers:", error);
+      }
+    };
+
+    fetchServers();
+  }, [selectedServer]);
+
+  // サーバー変更時にチャンネル選択をリセット
+  useEffect(() => {
+    setSelectedChannel(null);
+  }, [selectedServer]);
 
   return (
     <div className="h-screen flex flex-col">
@@ -28,17 +62,30 @@ export default function RootLayout({
         <ServerSidebar
           onSelectServer={setSelectedServer}
           selectedServer={selectedServer}
+          servers={servers}
+          onServersUpdate={setServers}
         />
 
-        {selectedServer ? (
-          <ChannelSidebar server={selectedServer} />
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            サーバーを選択してください
-          </div>
+        {selectedServer && (
+          <ChannelSidebar 
+            server={selectedServer} 
+            selectedChannel={selectedChannel}
+            onSelectChannel={setSelectedChannel}
+          />
         )}
 
-        <div className="flex-1 bg-gray-200 overflow-auto p-4">{children}</div>
+        <div className="flex-1 bg-gray-200 overflow-hidden">
+          {selectedChannel ? (
+            <ChannelContent channel={selectedChannel} />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-500">
+                <h2 className="text-xl font-semibold mb-2">チャンネルを選択してください</h2>
+                <p>左側のサーバーからチャンネルを選択してください</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

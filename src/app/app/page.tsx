@@ -1,7 +1,4 @@
 export default function App() {
-  return (
-    <div>
-      <h1>My App</h1>
-    </div>
-  );
+  // このページは使用されません - レイアウトでチャンネルコンテンツを直接表示
+  return null;
 }

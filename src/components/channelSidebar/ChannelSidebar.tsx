@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 import { BiHash } from "react-icons/bi";
 import { IoMdAdd } from "react-icons/io";
@@ -16,15 +16,20 @@ export type Server = {
 export type Channel = {
   id: number;
   name: string;
-  url?: string;
+  serverId: number;
 };
 
 type Props = {
   server: Server;
+  selectedChannel: Channel | null;
+  onSelectChannel: (channel: Channel) => void;
 };
 
-export default function ChannelSidebar({ server }: Props) {
-  const router = useRouter();
+export default function ChannelSidebar({ 
+  server, 
+  selectedChannel, 
+  onSelectChannel 
+}: Props) {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +44,16 @@ export default function ChannelSidebar({ server }: Props) {
         });
         if (!res.ok) throw new Error(`Channel fetch error ${res.status}`);
         const data: Channel[] = await res.json();
-        setChannels(
-          data.map((c) => ({
-            ...c,
-            url: `/app/servers/${server.id}/channels/${c.id}`,
-          })),
-        );
+        const channelsWithServerId = data.map((c) => ({
+          ...c,
+          serverId: server.id,
+        }));
+        setChannels(channelsWithServerId);
+        
+        // 最初のチャンネルを自動選択（チャンネルがある場合）
+        if (channelsWithServerId.length > 0 && !selectedChannel) {
+          onSelectChannel(channelsWithServerId[0]);
+        }
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -70,15 +79,13 @@ export default function ChannelSidebar({ server }: Props) {
       if (!res.ok) throw new Error(`Channel create error ${res.status}`);
       const newChannel: Channel = await res.json();
 
-      setChannels((prev) => [
-        ...prev,
-        {
-          ...newChannel,
-          url: `/app/servers/${server.id}/channels/${newChannel.id}`,
-        },
-      ]);
+      const channelWithServerId = {
+        ...newChannel,
+        serverId: server.id,
+      };
 
-      router.push(`/app/servers/${server.id}/channels/${newChannel.id}`);
+      setChannels((prev) => [...prev, channelWithServerId]);
+      onSelectChannel(channelWithServerId);
     } catch (err: any) {
       alert(`チャンネル作成エラー: ${err.message}`);
     }
@@ -107,17 +114,31 @@ export default function ChannelSidebar({ server }: Props) {
         </div>
 
         <div className="flex flex-col space-y-1">
-          {channels.map((channel) => (
-            <button
-              key={channel.id}
-              type="button"
-              onClick={() => router.push(channel.url!)}
-              className="flex items-center px-2 py-1 text-gray-300 rounded hover:bg-gray-700 hover:text-white text-sm font-medium focus:outline-none"
-            >
-              <BiHash className="mr-2" />
-              {channel.name}
-            </button>
-          ))}
+          {channels.length === 0 ? (
+            <div className="px-2 py-4 text-center text-gray-400 text-sm">
+              <p className="mb-2">チャンネルがありません</p>
+              <p className="text-xs">「+」ボタンでチャンネルを作成してください</p>
+            </div>
+          ) : (
+            channels.map((channel) => {
+              const isSelected = selectedChannel?.id === channel.id;
+              return (
+                <button
+                  key={channel.id}
+                  type="button"
+                  onClick={() => onSelectChannel(channel)}
+                  className={`flex items-center px-2 py-1 rounded text-sm font-medium focus:outline-none transition-colors duration-150 ${
+                    isSelected
+                      ? "bg-gray-600 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                >
+                  <BiHash className="mr-2" />
+                  {channel.name}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
