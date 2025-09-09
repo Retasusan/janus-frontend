@@ -9,32 +9,71 @@ export default function ProfileCard({
 }: {
   user: { name: string; email: string; picture: string; sub: string };
 }) {
+  console.log(user)
   return (
-    <div className="flex flex-col items-center p-8 bg-gray-100 min-h-screen">
-      <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md flex flex-col items-center space-y-6">
-        <Avatar className="w-24 h-24">
-          <AvatarImage src={user.picture} alt={user.name} />
-          <AvatarFallback>{user.name[0]}</AvatarFallback>
-        </Avatar>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-          <p className="text-gray-500">user_id: {user.sub?.split("|")[1]}</p>
-        </div>
-        <div className="w-full border-t border-gray-200 pt-4 flex justify-center">
-          <div className="text-gray-600 text-sm">
-            Email:{" "}
-            <span className="text-gray-800 font-medium">{user.email}</span>
+    <div className="flex flex-col items-center p-8 bg-gray-50 min-h-full">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
+        <div className="flex flex-col items-center space-y-6">
+          <Avatar className="w-32 h-32 border-4 border-gray-200">
+            <AvatarImage src={user.picture} alt={user.name} />
+            <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+              {user.name[0]}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+            <p className="text-gray-500 text-sm">
+              User ID: {user.sub || "N/A"}
+            </p>
+          </div>
+
+          <div className="w-full bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-600">Email</label>
+                <p className="text-gray-900 font-medium">{user.email}</p>
+              </div>
+              {/* <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-600">Status</label>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-900 font-medium">Online</span>
+                </div>
+              </div> */}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 w-full">
+            <Button className="bg-blue-600 text-white hover:bg-blue-700 flex-1 py-2">
+              プロフィールを編集
+            </Button>
+            <Button className="bg-gray-200 text-gray-800 hover:bg-gray-300 flex items-center justify-center gap-2 flex-1 py-2">
+              <IoMdAdd size={18} />
+              フレンドを追加
+            </Button>
           </div>
         </div>
-        <div className="flex space-x-3 pt-4">
-          <Button className="bg-blue-600 text-white hover:bg-blue-500">
-            Edit Profile
-          </Button>
-          <Button className="bg-gray-200 text-gray-800 hover:bg-gray-300 flex items-center gap-1">
-            <IoMdAdd /> Add Friend
-          </Button>
-        </div>
       </div>
+
+      {/* 追加情報セクション */}
+      {/* <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-2xl mt-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">アカウント情報</h2>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <span className="text-gray-600">アカウント作成日</span>
+            <span className="text-gray-900 font-medium">2024年1月1日</span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+            <span className="text-gray-600">最終ログイン</span>
+            <span className="text-gray-900 font-medium">今日</span>
+          </div>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-gray-600">参加サーバー数</span>
+            <span className="text-gray-900 font-medium">3</span>
+          </div>
+        </div>
+      </div> */}
     </div>
   );
 }

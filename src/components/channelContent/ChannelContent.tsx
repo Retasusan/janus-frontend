@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type Channel = {
   id: number;
@@ -23,6 +23,9 @@ export default function ChannelContent({ channel }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [messageInput, setMessageInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -49,6 +52,49 @@ export default function ChannelContent({ channel }: Props) {
 
     fetchMessages();
   }, [channel]);
+
+  // メッセージが更新されたら最下部にスクロール
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!messageInput.trim() || sending) return;
+
+    setSending(true);
+    try {
+      const res = await fetch(
+        `/api/servers/${channel.serverId}/channels/${channel.id}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ content: messageInput.trim() }),
+        }
+      );
+
+      if (res.ok) {
+        const newMessage: Message = await res.json();
+        setMessages((prev) => [...prev, newMessage]);
+        setMessageInput("");
+      } else {
+        throw new Error(`メッセージ送信エラー ${res.status}`);
+      }
+    } catch (err: any) {
+      alert(`メッセージ送信エラー: ${err.message}`);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,25 +142,31 @@ export default function ChannelContent({ channel }: Props) {
                 <div className="text-gray-700">{message.content}</div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
       {/* メッセージ入力エリア */}
       <div className="p-4 border-t border-gray-300 bg-white">
-        <div className="flex items-center space-x-2">
+        <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <input
             type="text"
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder={`#${channel.name} にメッセージを送信`}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            disabled={sending}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <button
-            type="button"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            type="submit"
+            disabled={!messageInput.trim() || sending}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-150"
           >
-            送信
+            {sending ? "送信中..." : "送信"}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );
