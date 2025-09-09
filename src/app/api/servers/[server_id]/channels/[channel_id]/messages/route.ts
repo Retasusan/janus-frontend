@@ -2,13 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/lib/auth0";
 
 // GET ハンドラ
-export async function GET(
-  req: NextRequest, // ← NextRequest にする
-  { params }: { params: { server_id: string; channel_id: string } }, // destructuring
-) {
-  const { server_id, channel_id } = params; // ✅ 同期的にアクセスして OK
+export async function GET({
+  params,
+}: {
+  params: { server_id: string; channel_id: string };
+}) {
+  const { server_id, channel_id } = params;
 
-  const session = await auth0.getSession(); // ✅ NextRequest を渡す
+  const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -38,7 +39,7 @@ export async function POST(
 ) {
   const { server_id, channel_id } = params;
 
-  const session = await auth0.getSession(); // ✅ NextRequest を渡す
+  const session = await auth0.getSession();
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
