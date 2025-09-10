@@ -1,34 +1,29 @@
-import { MessageSquare, FolderOpen, Calendar, Users, FileText, Zap } from "lucide-react";
+import { MessageSquare, FolderOpen, Users, FileText, Zap } from "lucide-react";
 
 const features = [
   {
     name: "リアルタイムチャット",
-    description: "チームメンバーとリアルタイムでコミュニケーション。チャンネル機能でトピック別に整理。",
+    description: "テキストチャンネルでリアルタイムにメッセージを送受信。グループでの会話を整理。",
     icon: MessageSquare,
   },
   {
-    name: "プロジェクト管理",
-    description: "タスクの作成、割り当て、進捗管理を一元化。チームの生産性を向上させます。",
-    icon: FolderOpen,
-  },
-  {
-    name: "カレンダー統合",
-    description: "スケジュール管理とミーティング調整を簡単に。チーム全体の予定を把握。",
-    icon: Calendar,
-  },
-  {
-    name: "チーム管理",
-    description: "メンバーの役割と権限を細かく設定。セキュアなチーム環境を構築。",
-    icon: Users,
-  },
-  {
     name: "ファイル共有",
-    description: "ドキュメントやファイルを安全に共有。バージョン管理機能付き。",
+    description: "ドキュメント、画像、その他のファイルを簡単にアップロード・共有。",
     icon: FileText,
   },
   {
-    name: "高速パフォーマンス",
-    description: "最新技術を使用した高速なアプリケーション。ストレスフリーな操作体験。",
+    name: "カレンダー機能",
+    description: "イベントやスケジュールを管理。チーム全体で予定を共有。",
+    icon: FolderOpen,
+  },
+  {
+    name: "サーバー管理",
+    description: "複数のサーバーとチャンネルを作成・管理。用途別に整理して使用。",
+    icon: Users,
+  },
+  {
+    name: "簡単セットアップ",
+    description: "3分で環境を構築。複雑な設定は不要で、すぐに使い始められます。",
     icon: Zap,
   },
 ];
@@ -38,17 +33,17 @@ export function Features() {
     <section className="py-24 sm:py-32">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-base font-semibold leading-7 text-primary">すべてが揃っています</h2>
+          <h2 className="text-base font-semibold leading-7 text-primary">シンプルで使いやすい</h2>
           <p className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            チームワークを加速する機能
+            必要な機能だけを厳選
           </p>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            現代のチームが必要とするすべての機能を一つのプラットフォームに統合。
-            効率的なコラボレーションを実現します。
+            チャット、ファイル共有、カレンダーなど、コミュニケーションに必要な基本機能を提供。
+            シンプルで直感的な操作で、すぐに使い始められます。
           </p>
         </div>
         <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2 xl:grid-cols-3">
             {features.map((feature) => (
               <div key={feature.name} className="flex flex-col">
                 <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-foreground">

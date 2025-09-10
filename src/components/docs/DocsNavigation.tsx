@@ -11,35 +11,15 @@ const navigation = [
     title: "はじめに",
     items: [
       { title: "概要", href: "/docs" },
-      { title: "クイックスタート", href: "/docs/quickstart" },
-      { title: "インストール", href: "/docs/installation" },
+      { title: "基本的な使い方", href: "/docs/getting-started" },
     ],
   },
   {
-    title: "基本機能",
+    title: "実装済み機能",
     items: [
-      { title: "チャット", href: "/docs/chat" },
-      { title: "プロジェクト管理", href: "/docs/projects" },
+      { title: "テキストチャット", href: "/docs/text-chat" },
       { title: "ファイル共有", href: "/docs/file-sharing" },
       { title: "カレンダー", href: "/docs/calendar" },
-    ],
-  },
-  {
-    title: "高度な機能",
-    items: [
-      { title: "プラグイン", href: "/docs/plugins" },
-      { title: "API", href: "/docs/api" },
-      { title: "Webhook", href: "/docs/webhooks" },
-      { title: "統合", href: "/docs/integrations" },
-    ],
-  },
-  {
-    title: "管理",
-    items: [
-      { title: "ユーザー管理", href: "/docs/user-management" },
-      { title: "権限設定", href: "/docs/permissions" },
-      { title: "セキュリティ", href: "/docs/security" },
-      { title: "バックアップ", href: "/docs/backup" },
     ],
   },
 ];

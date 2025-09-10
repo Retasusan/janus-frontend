@@ -12,7 +12,7 @@ export function DocsContent() {
           <Badge variant="secondary">v1.0</Badge>
         </div>
         <p className="text-xl text-muted-foreground">
-          YourAppの使い方、機能、APIについて詳しく説明します。
+          チャット、ファイル共有、カレンダー機能の使い方ガイド
         </p>
       </div>
 
@@ -21,81 +21,113 @@ export function DocsContent() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>🚀 クイックスタート</CardTitle>
+            <CardTitle>🚀 基本的な使い方</CardTitle>
             <CardDescription>
-              5分でYourAppを始める方法
+              サーバーとチャンネルの作成
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              アカウント作成からチーム設定まで、すぐに使い始められるガイドです。
+              サーバーを作成し、チャンネルを追加して基本的な機能を使い始める方法を説明します。
             </p>
             <Link 
-              href="/docs/quickstart" 
+              href="/docs/getting-started" 
               className="text-sm font-medium text-primary hover:underline"
             >
-              クイックスタートを見る →
+              使い方を見る →
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>💬 チャット機能</CardTitle>
+            <CardTitle>💬 テキストチャット</CardTitle>
             <CardDescription>
-              リアルタイムコミュニケーション
+              メッセージの送受信
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              チャンネル作成、メッセージ送信、ファイル共有などの基本操作を学びます。
+              テキストチャンネルでメッセージを送信し、リアルタイムで会話する方法を学びます。
             </p>
             <Link 
-              href="/docs/chat" 
+              href="/docs/text-chat" 
               className="text-sm font-medium text-primary hover:underline"
             >
-              チャット機能を見る →
+              テキストチャットを見る →
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>📋 プロジェクト管理</CardTitle>
+            <CardTitle>📁 ファイル共有</CardTitle>
             <CardDescription>
-              タスクとプロジェクトの管理
+              ファイルのアップロードと管理
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              プロジェクト作成、タスク割り当て、進捗管理の方法を説明します。
+              ファイル共有チャンネルでファイルをアップロード・ダウンロードする方法を説明します。
             </p>
             <Link 
-              href="/docs/projects" 
+              href="/docs/file-sharing" 
               className="text-sm font-medium text-primary hover:underline"
             >
-              プロジェクト管理を見る →
+              ファイル共有を見る →
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>🔌 API リファレンス</CardTitle>
+            <CardTitle>📅 カレンダー</CardTitle>
             <CardDescription>
-              開発者向けAPI仕様
+              イベントとスケジュール管理
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              REST API、WebSocket、認証方法などの技術仕様を提供します。
+              カレンダーチャンネルでイベントを作成し、スケジュールを管理する方法を紹介します。
             </p>
             <Link 
-              href="/docs/api" 
+              href="/docs/calendar" 
               className="text-sm font-medium text-primary hover:underline"
             >
-              API仕様を見る →
+              カレンダーを見る →
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-dashed">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              📋 利用可能な機能
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span>テキストチャット（メッセージ送受信）</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span>ファイル共有（アップロード・ダウンロード）</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                <span>カレンダー（イベント作成・管理）</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                <span>サーバー・チャンネル管理</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -103,36 +135,46 @@ export function DocsContent() {
       <Separator />
 
       <div>
-        <h2 className="text-2xl font-bold mb-4">人気のトピック</h2>
+        <h2 className="text-2xl font-bold mb-4">機能別ガイド</h2>
         <div className="space-y-4">
           <div className="border-l-4 border-primary pl-4">
             <h3 className="font-semibold">
-              <Link href="/docs/installation" className="hover:underline">
-                インストールとセットアップ
+              <Link href="/docs/getting-started" className="hover:underline">
+                基本的な使い方
               </Link>
             </h3>
             <p className="text-sm text-muted-foreground">
-              YourAppをインストールして初期設定を行う方法
+              サーバー作成からチャンネル追加まで、基本操作を学ぶ
             </p>
           </div>
           <div className="border-l-4 border-primary pl-4">
             <h3 className="font-semibold">
-              <Link href="/docs/plugins" className="hover:underline">
-                プラグインシステム
+              <Link href="/docs/text-chat" className="hover:underline">
+                テキストチャット
               </Link>
             </h3>
             <p className="text-sm text-muted-foreground">
-              カスタムプラグインの作成と管理方法
+              メッセージの送信とリアルタイム会話の方法
             </p>
           </div>
           <div className="border-l-4 border-primary pl-4">
             <h3 className="font-semibold">
-              <Link href="/docs/security" className="hover:underline">
-                セキュリティ設定
+              <Link href="/docs/file-sharing" className="hover:underline">
+                ファイル共有
               </Link>
             </h3>
             <p className="text-sm text-muted-foreground">
-              安全なチーム環境を構築するためのセキュリティ設定
+              ファイルのアップロード・ダウンロード・管理
+            </p>
+          </div>
+          <div className="border-l-4 border-primary pl-4">
+            <h3 className="font-semibold">
+              <Link href="/docs/calendar" className="hover:underline">
+                カレンダー機能
+              </Link>
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              イベント作成とスケジュール管理の使い方
             </p>
           </div>
         </div>
@@ -140,23 +182,31 @@ export function DocsContent() {
 
       <Separator />
 
-      <div className="bg-muted/50 rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-2">サポートが必要ですか？</h2>
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 border">
+        <h2 className="text-xl font-semibold mb-2">🚀 実装済み機能</h2>
         <p className="text-muted-foreground mb-4">
-          ドキュメントで解決できない問題がある場合は、お気軽にお問い合わせください。
+          現在利用可能な機能をご紹介します。
         </p>
-        <div className="flex space-x-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">💬</div>
+            <div className="text-sm text-muted-foreground">テキストチャット</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">📁</div>
+            <div className="text-sm text-muted-foreground">ファイル共有</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">📅</div>
+            <div className="text-sm text-muted-foreground">カレンダー</div>
+          </div>
+        </div>
+        <div className="mt-4 text-center">
           <Link 
-            href="/support" 
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            href="/auth/login?screen_hint=signup" 
+            className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            サポートに連絡
-          </Link>
-          <Link 
-            href="/community" 
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-          >
-            コミュニティ
+            無料で始める
           </Link>
         </div>
       </div>

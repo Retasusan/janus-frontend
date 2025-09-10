@@ -20,7 +20,7 @@ export function Navigation({ isLoggedIn }: NavigationProps) {
               <div className="h-8 w-8 rounded-full bg-primary"></div>
               <span className="text-xl font-bold">YourApp</span>
             </Link>
-            
+
             <div className="hidden md:flex items-center space-x-6">
               <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 ドキュメント
