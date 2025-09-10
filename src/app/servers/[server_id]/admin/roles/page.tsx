@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { FiUsers, FiShield, FiLock } from 'react-icons/fi';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { AdminGate } from '@/components/rbac/PermissionGate';
+import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2 } from 'react-icons/fi';
 
 interface Role {
   id: number;
@@ -30,21 +32,16 @@ interface Member {
   userName: string;
   userEmail: string;
   userPicture?: string;
-  role: string;
   roles: Role[];
   joinedAt: string;
 }
 
-interface RBACPluginProps {
-  channel: {
-    id: string;
-    serverId: string;
-    name: string;
-  };
+interface RoleManagementPageProps {
+  params: { server_id: string };
 }
 
-function RBACContent({ channel }: RBACPluginProps) {
-  const { id: channelId, serverId } = channel;
+export default function RoleManagementPage({ params }: RoleManagementPageProps) {
+  const { server_id } = params;
   const [roles, setRoles] = useState<Role[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,19 +51,19 @@ function RBACContent({ channel }: RBACPluginProps) {
 
   useEffect(() => {
     loadData();
-  }, [channelId, serverId]);
+  }, [server_id]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       const [rolesRes, membersRes] = await Promise.all([
-        fetch(`/api/servers/${serverId}/roles`, { credentials: 'include' }),
-        fetch(`/api/servers/${serverId}/members`, { credentials: 'include' })
+        fetch(`/api/servers/${server_id}/roles`, { credentials: 'include' }),
+        fetch(`/api/servers/${server_id}/members`, { credentials: 'include' })
       ]);
 
       if (rolesRes.ok) {
         const rolesData = await rolesRes.json();
-        setRoles(Array.isArray(rolesData) ? rolesData : []);
+        setRoles(rolesData);
       }
 
       if (membersRes.ok) {
@@ -82,7 +79,7 @@ function RBACContent({ channel }: RBACPluginProps) {
 
   const assignRole = async (userId: string, roleId: number) => {
     try {
-      const res = await fetch(`/api/servers/${serverId}/role_assignments/${userId}`, {
+      const res = await fetch(`/api/servers/${server_id}/role_assignments/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -90,7 +87,7 @@ function RBACContent({ channel }: RBACPluginProps) {
       });
 
       if (res.ok) {
-        await loadData();
+        await loadData(); // データを再読み込み
         setShowRoleAssignModal(false);
         setSelectedMember(null);
       } else {
@@ -104,31 +101,36 @@ function RBACContent({ channel }: RBACPluginProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">読み込み中...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
     <AdminGate 
-      serverId={serverId}
+      serverId={server_id}
       fallback={
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <FiLock className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">管理者権限が必要です</h3>
+            <FiShield className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">アクセス権限がありません</h3>
             <p className="mt-1 text-sm text-gray-500">
-              この権限管理機能にアクセスするには管理者権限が必要です。
+              この権限管理ページにアクセスするには管理者権限が必要です。
             </p>
           </div>
         </div>
       }
     >
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">権限管理</h1>
-          <p className="text-gray-600">サーバーの権限は固定レベル制です。ロールを変更することで権限が変わります。</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+            <FiSettings className="mr-3" />
+            権限管理
+          </h1>
+          <p className="mt-2 text-gray-600">
+            サーバーのロールとメンバーの権限を管理します
+          </p>
         </div>
 
         {/* タブナビゲーション */}
@@ -143,7 +145,7 @@ function RBACContent({ channel }: RBACPluginProps) {
               }`}
             >
               <FiShield className="inline mr-2" />
-              ロール一覧
+              ロール管理
             </button>
             <button
               onClick={() => setActiveTab('members')}
@@ -159,98 +161,97 @@ function RBACContent({ channel }: RBACPluginProps) {
           </nav>
         </div>
 
+        {/* ロール管理タブ */}
         {activeTab === 'roles' && (
-          <div>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-2">ロール一覧と権限</h2>
-              <p className="text-sm text-gray-600">各ロールの権限は固定です。チェックボックスは現在の権限状態を表示しています（変更不可）。</p>
-            </div>
-
-            <div className="space-y-4">
-              {roles.map((role) => (
-                <div key={role.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: role.color }}
-                      />
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {role.name}
-                          {role.defaultRole && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              デフォルト
-                            </span>
-                          )}
-                        </h3>
-                        <p className="text-sm text-gray-500">{role.description}</p>
-                        <p className="text-xs text-gray-400">
-                          権限レベル: {role.permissionLevel} | メンバー数: {role.memberCount}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* 権限詳細（読み取り専用） */}
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">このロールの権限:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {role.permissions?.map((permission) => (
-                        <div
-                          key={permission.name}
-                          className="flex items-center space-x-2 p-2 rounded border"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={permission.hasPermission}
-                            disabled
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
+          <div className="space-y-6">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  サーバーロール一覧
+                </h3>
+                <div className="space-y-4">
+                  {roles.map((role) => (
+                    <div
+                      key={role.id}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: role.color }}
                           />
-                          <div className="flex-1">
-                            <span className={`text-sm ${permission.hasPermission ? 'text-gray-900' : 'text-gray-400'}`}>
-                              {permission.description}
-                            </span>
-                            <div className="text-xs text-gray-400">
-                              必要レベル: {permission.required_level}
-                            </div>
+                          <div>
+                            <h4 className="text-lg font-medium text-gray-900">
+                              {role.name}
+                              {role.defaultRole && (
+                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  デフォルト
+                                </span>
+                              )}
+                            </h4>
+                            <p className="text-sm text-gray-500">{role.description}</p>
+                            <p className="text-xs text-gray-400">
+                              権限レベル: {role.permissionLevel} | メンバー数: {role.memberCount}
+                            </p>
                           </div>
                         </div>
-                      )) || (
-                        <div className="text-sm text-gray-500">権限情報の読み込み中...</div>
-                      )}
+                        <div className="flex space-x-2">
+                          {!role.defaultRole && (
+                            <>
+                              <button className="p-2 text-gray-400 hover:text-gray-600">
+                                <FiEdit3 className="h-4 w-4" />
+                              </button>
+                              <button className="p-2 text-red-400 hover:text-red-600">
+                                <FiTrash2 className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* 権限詳細 */}
+                      <div className="mt-4">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">権限詳細:</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {role.permissions.map((permission) => (
+                            <div
+                              key={permission.name}
+                              className={`px-3 py-1 rounded-full text-xs ${
+                                permission.hasPermission
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-500'
+                              }`}
+                            >
+                              {permission.description}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         )}
 
+        {/* メンバー管理タブ */}
         {activeTab === 'members' && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4">メンバー管理</h2>
-            
-            <div className="space-y-3">
-              {members.map((member) => (
-                <div key={member.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {member.userPicture ? (
-                        <img 
-                          src={member.userPicture} 
-                          alt={member.userName}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-700">
-                            {member.userName?.charAt(0)?.toUpperCase() || '?'}
-                          </span>
-                        </div>
-                      )}
+          <div className="space-y-6">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  メンバー一覧
+                </h3>
+                <div className="space-y-3">
+                  {members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between border border-gray-200 rounded-lg p-4"
+                    >
                       <div>
-                        <h3 className="font-medium text-gray-900">{member.userName}</h3>
+                        <h4 className="text-sm font-medium text-gray-900">{member.userName}</h4>
                         <p className="text-sm text-gray-500">{member.userEmail}</p>
                         <div className="mt-1 flex space-x-2">
                           {member.roles?.map((role) => (
@@ -271,19 +272,19 @@ function RBACContent({ channel }: RBACPluginProps) {
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => {
+                          setSelectedMember(member);
+                          setShowRoleAssignModal(true);
+                        }}
+                        className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700"
+                      >
+                        ロール変更
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setShowRoleAssignModal(true);
-                      }}
-                      className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700"
-                    >
-                      ロール変更
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         )}
@@ -340,17 +341,3 @@ function RBACContent({ channel }: RBACPluginProps) {
     </AdminGate>
   );
 }
-
-// プラグイン定義
-const RBACPlugin = {
-  meta: {
-    name: 'RBAC管理',
-    description: 'サーバーの権限とロールを管理します',
-    type: 'rbac' as const,
-    icon: '🔒',
-    color: '#8B5CF6',
-  },
-  ContentComponent: RBACContent,
-};
-
-export default RBACPlugin;
