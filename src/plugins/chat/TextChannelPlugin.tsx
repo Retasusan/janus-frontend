@@ -33,6 +33,10 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
         if (res.ok) {
           const data: Message[] = await res.json();
           setMessages(data);
+          // 初回読み込み後、少し遅延して最下部にスクロール
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
         } else {
           setMessages([]);
         }
@@ -120,7 +124,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
       </div>
 
       {/* メッセージエリア */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <h3 className="text-xl font-semibold mb-2">#{channel.name} へようこそ！</h3>

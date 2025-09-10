@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminGate } from '@/components/rbac/PermissionGate';
-import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2, FiAlertTriangle, FiCheck, FiX } from 'react-icons/fi';
+import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2, FiAlertTriangle, FiCheck, FiX, FiArrowLeft } from 'react-icons/fi';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -62,6 +63,7 @@ interface RoleManagementPageProps {
 
 export default function RoleManagementPage({ params }: RoleManagementPageProps) {
   const { server_id } = use(params);
+  const router = useRouter();
   const [roles, setRoles] = useState<Role[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -245,48 +247,68 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
         </div>
       }
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <FiSettings className="mr-3" />
-            権限管理
-          </h1>
-          <p className="mt-2 text-gray-600">
-            サーバーのロールとメンバーの権限を管理します
-          </p>
+      <div className="h-full flex flex-col">
+        {/* ヘッダー */}
+        <div className="bg-white shadow flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center">
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center text-gray-500 hover:text-gray-700 mr-4"
+                >
+                  <FiArrowLeft className="h-5 w-5 mr-1" />
+                  戻る
+                </button>
+                <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <FiSettings className="mr-2" />
+                  権限管理
+                </h1>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* タブナビゲーション */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('roles')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'roles'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FiShield className="inline mr-2" />
-              ロール管理
-            </button>
-            <button
-              onClick={() => setActiveTab('members')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'members'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FiUsers className="inline mr-2" />
-              メンバー管理
-            </button>
-          </nav>
-        </div>
+        {/* コンテンツエリア */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <p className="text-gray-600">
+              サーバーのロールとメンバーの権限を管理します
+            </p>
+          </div>
 
-        {/* ロール管理タブ */}
-        {activeTab === 'roles' && (
-          <div className="space-y-6">
+          {/* タブナビゲーション */}
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('roles')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'roles'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <FiShield className="inline mr-2" />
+                ロール管理
+              </button>
+              <button
+                onClick={() => setActiveTab('members')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'members'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <FiUsers className="inline mr-2" />
+                メンバー管理
+              </button>
+            </nav>
+          </div>
+
+          {/* ロール管理タブ */}
+          {activeTab === 'roles' && (
+            <div className="space-y-6">
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
@@ -357,11 +379,11 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
               </div>
             </div>
           </div>
-        )}
+          )}
 
-        {/* メンバー管理タブ */}
-        {activeTab === 'members' && (
-          <div className="space-y-6">
+          {/* メンバー管理タブ */}
+          {activeTab === 'members' && (
+            <div className="space-y-6">
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
@@ -518,6 +540,8 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+          </div>
+        </div>
       </div>
     </AdminGate>
   );

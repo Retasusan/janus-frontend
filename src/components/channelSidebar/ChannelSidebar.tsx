@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BiHash } from "react-icons/bi";
 import { IoMdAdd } from "react-icons/io";
+import { FiSettings } from "react-icons/fi";
 import CreateChannelModal from "@/components/channelContent/CreateChannelModal";
 import { pluginRegistry } from "@/lib/pluginRegistry";
 import { ChannelType, type CreateChannelRequest } from "@/types/channel";
@@ -41,6 +43,7 @@ export default function ChannelSidebar({
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchChannels = async () => {
@@ -134,58 +137,70 @@ export default function ChannelSidebar({
   if (error) return <p className="text-red-500 text-xs px-2 py-1">{error}</p>;
 
   return (
-    <div className="w-56 bg-gray-800 text-gray-200 min-h-screen flex flex-col">
-      <div className="h-16 flex items-center px-4 border-b border-gray-700 font-bold">
-        {server.name}
+    <div className="w-56 bg-gray-800 text-gray-200 h-full flex flex-col">
+      {/* 固定ヘッダー */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-700 font-bold flex-shrink-0">
+        <span>{server.name}</span>
+        <button
+          type="button"
+          className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+          onClick={() => router.push(`/servers/${server.id}/admin/roles`)}
+          title="権限管理"
+        >
+          <FiSettings size={16} />
+        </button>
       </div>
 
-      <div className="flex-1 px-2 py-3">
-        <div className="flex items-center justify-between px-2 mb-2 text-gray-400 uppercase text-xs font-semibold">
-          <span>Text Channels</span>
-          <button
-            type="button"
-            className="hover:text-white"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <IoMdAdd size={16} />
-          </button>
-        </div>
+      {/* スクロール可能なチャンネルリスト */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-2 py-3">
+          <div className="flex items-center justify-between px-2 mb-2 text-gray-400 uppercase text-xs font-semibold">
+            <span>Text Channels</span>
+            <button
+              type="button"
+              className="hover:text-white"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <IoMdAdd size={16} />
+            </button>
+          </div>
 
-        <div className="flex flex-col space-y-1">
-          {channels.length === 0 ? (
-            <div className="px-2 py-4 text-center text-gray-400 text-sm">
-              <p className="mb-2">チャンネルがありません</p>
-              <p className="text-xs">
-                「+」ボタンでチャンネルを作成してください
-              </p>
-            </div>
-          ) : (
-            channels.map((channel) => {
-              const isSelected = selectedChannel?.id === channel.id;
-              const channelType = channel.type || ChannelType.TEXT;
-              const plugin = pluginRegistry.get(channelType);
+          <div className="flex flex-col space-y-1">
+            {channels.length === 0 ? (
+              <div className="px-2 py-4 text-center text-gray-400 text-sm">
+                <p className="mb-2">チャンネルがありません</p>
+                <p className="text-xs">
+                  「+」ボタンでチャンネルを作成してください
+                </p>
+              </div>
+            ) : (
+              channels.map((channel) => {
+                const isSelected = selectedChannel?.id === channel.id;
+                const channelType = channel.type || ChannelType.TEXT;
+                const plugin = pluginRegistry.get(channelType);
 
-              return (
-                <button
-                  key={channel.id}
-                  type="button"
-                  onClick={() => onSelectChannel(channel)}
-                  className={`flex items-center px-2 py-1 rounded text-sm font-medium focus:outline-none transition-colors duration-150 ${isSelected
-                    ? "bg-gray-600 text-white"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`}
-                >
-                  <span
-                    className="mr-2"
-                    style={{ color: plugin?.meta.color || "#6b7280" }}
+                return (
+                  <button
+                    key={channel.id}
+                    type="button"
+                    onClick={() => onSelectChannel(channel)}
+                    className={`flex items-center px-2 py-1 rounded text-sm font-medium focus:outline-none transition-colors duration-150 ${isSelected
+                      ? "bg-gray-600 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      }`}
                   >
-                    {plugin?.meta.icon || <BiHash />}
-                  </span>
-                  {channel.name}
-                </button>
-              );
-            })
-          )}
+                    <span
+                      className="mr-2"
+                      style={{ color: plugin?.meta.color || "#6b7280" }}
+                    >
+                      {plugin?.meta.icon || <BiHash />}
+                    </span>
+                    {channel.name}
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
 

@@ -34,5 +34,9 @@ export default function ChannelContent({ channel }: Props) {
     updatedAt: new Date().toISOString(),
   };
 
-  return <BaseChannelContent channel={baseChannel} />;
+  return (
+    <div className="h-full">
+      <BaseChannelContent channel={baseChannel} />
+    </div>
+  );
 }

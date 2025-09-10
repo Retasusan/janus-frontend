@@ -33,6 +33,9 @@ export default function RootLayout({
 
   // プロファイルページかどうかを判定
   const isProfilePage = pathname === "/app/profile";
+  
+  // 管理者ページかどうかを判定
+  const isAdminPage = pathname.includes("/admin");
 
   useEffect(() => {
     const fetchServers = async () => {
@@ -59,6 +62,11 @@ export default function RootLayout({
     setSelectedChannel(null);
   }, [selectedServer]);
 
+  // 管理者ページの場合は子要素をそのまま表示
+  if (isAdminPage) {
+    return <>{children}</>;
+  }
+
   // プロファイルページの場合は異なるレイアウトを使用
   if (isProfilePage) {
     return (
@@ -70,10 +78,10 @@ export default function RootLayout({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="h-screen flex flex-col">
       <Header />
-
-      <div className="flex">
+      
+      <div className="flex flex-1 overflow-hidden">
         <ServerSidebar
           onSelectServer={setSelectedServer}
           selectedServer={selectedServer}
@@ -89,7 +97,7 @@ export default function RootLayout({
           />
         )}
 
-        <div className="flex-1 bg-gray-200 min-h-screen">
+        <div className="flex-1 bg-gray-200 h-full">
           {selectedChannel ? (
             <ChannelContent channel={selectedChannel} />
           ) : (
