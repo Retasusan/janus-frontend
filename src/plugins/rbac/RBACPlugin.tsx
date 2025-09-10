@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiUsers, FiShield, FiLock } from 'react-icons/fi';
 import { AdminGate } from '@/components/rbac/PermissionGate';
+import { useToast } from '@/hooks/use-toast';
 
 interface Role {
   id: number;
@@ -45,6 +46,7 @@ interface RBACPluginProps {
 
 function RBACContent({ channel }: RBACPluginProps) {
   const { id: channelId, serverId } = channel;
+  const { toast } = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,12 +95,26 @@ function RBACContent({ channel }: RBACPluginProps) {
         await loadData();
         setShowRoleAssignModal(false);
         setSelectedMember(null);
+        toast({
+          title: "成功",
+          description: "ロールを正常に割り当てました",
+        });
       } else {
         const error = await res.json();
         console.error('ロール割り当てに失敗しました:', error);
+        toast({
+          title: "エラー",
+          description: error.error || "ロール割り当てに失敗しました",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('ロール割り当てに失敗しました:', error);
+      toast({
+        title: "エラー",
+        description: "ロール割り当てに失敗しました",
+        variant: "destructive",
+      });
     }
   };
 

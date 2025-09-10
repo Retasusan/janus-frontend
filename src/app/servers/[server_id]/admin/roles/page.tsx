@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { AdminGate } from '@/components/rbac/PermissionGate';
 import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2, FiAlertTriangle, FiCheck, FiX } from 'react-icons/fi';
 import { useToast } from '@/hooks/use-toast';
@@ -57,11 +57,11 @@ interface Member {
 }
 
 interface RoleManagementPageProps {
-  params: { server_id: string };
+  params: Promise<{ server_id: string }>;
 }
 
 export default function RoleManagementPage({ params }: RoleManagementPageProps) {
-  const { server_id } = params;
+  const { server_id } = use(params);
   const [roles, setRoles] = useState<Role[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);

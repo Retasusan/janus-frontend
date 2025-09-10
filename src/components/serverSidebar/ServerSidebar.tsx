@@ -2,12 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FiShare2, FiUserPlus, FiSettings, FiCheck, FiX } from "react-icons/fi";
+import { FiShare2, FiUserPlus, FiCheck, FiX } from "react-icons/fi";
 import { IoMdAdd } from "react-icons/io";
 import InviteCodeModal from "../server/InviteCodeModal";
 import JoinServerModal from "../server/JoinServerModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { AdminGate } from "../rbac/PermissionGate";
 import { useToast } from "@/hooks/use-toast";
 
 export type Server = {
@@ -247,20 +246,6 @@ export default function ServerSidebar({
         >
           <FiShare2 size={18} />
         </button>
-      )}
-
-      {/* 権限管理ボタン（Admin専用） */}
-      {selectedServer && (
-        <AdminGate serverId={selectedServer.id.toString()}>
-          <button
-            type="button"
-            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:rounded-xl hover:bg-orange-600 text-white group"
-            onClick={() => router.push(`/servers/${selectedServer.id}/admin/roles`)}
-            title="権限管理（Admin専用）"
-          >
-            <FiSettings size={18} />
-          </button>
-        </AdminGate>
       )}
 
       {/* モーダル */}
