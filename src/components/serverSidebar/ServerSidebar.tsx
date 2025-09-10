@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FiShare2, FiUserPlus } from "react-icons/fi";
 import { IoMdAdd } from "react-icons/io";
-import { FiUserPlus, FiShare2 } from "react-icons/fi";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import JoinServerModal from "../server/JoinServerModal";
 import InviteCodeModal from "../server/InviteCodeModal";
+import JoinServerModal from "../server/JoinServerModal";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export type Server = {
   id: number;
@@ -134,11 +134,11 @@ export default function ServerSidebar({
   };
 
   return (
-    <div className="w-14 bg-gray-900 text-gray-600 h-full flex flex-col items-center py-3 space-y-2">
+    <div className="w-14 bg-gray-900 text-gray-600 min-h-screen flex flex-col items-center py-3 space-y-2">
       {loading && <p className="text-gray-500 text-xs">読み込み中...</p>}
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
-      <div className="flex flex-col items-center space-y-2 flex-1">
+      <div className="flex flex-col items-center space-y-2 overflow-y-auto">
         {servers.map((server) => {
           const isSelected = selectedServer?.id === server.id;
           return (
@@ -175,7 +175,9 @@ export default function ServerSidebar({
                 {/* ツールチップ */}
                 <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {server.name}
-                  <div className="text-xs opacity-75 mt-1">右クリックで招待</div>
+                  <div className="text-xs opacity-75 mt-1">
+                    右クリックで招待
+                  </div>
                 </div>
               </button>
             </div>

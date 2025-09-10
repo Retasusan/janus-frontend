@@ -169,7 +169,7 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-full">
         <div className="text-gray-500">カレンダーを読み込み中...</div>
       </div>
     );
@@ -178,7 +178,7 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
   return (
     <div className="flex flex-col h-full">
       {/* ヘッダー */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-300 bg-white shadow-sm">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-300 bg-white shadow-sm flex-shrink-0">
         <div className="flex items-center">
           <span className="text-gray-500 mr-2">📅</span>
           <h1 className="text-lg font-semibold text-gray-800">{channel.name}</h1>
@@ -192,7 +192,7 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
       </div>
 
       {/* カレンダーナビゲーション */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
           className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
@@ -211,7 +211,7 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
       </div>
 
       {/* カレンダーグリッド */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['日', '月', '火', '水', '木', '金', '土'].map(day => (
             <div key={day} className="p-2 text-center font-semibold text-gray-600">

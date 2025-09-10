@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { IoIosArrowDown, IoMdArrowBack } from "react-icons/io";
 import {
   DropdownMenu,
@@ -11,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
 
 type SessionUser = {
   name?: string;
@@ -20,7 +20,7 @@ type SessionUser = {
 export default function Header() {
   const pathname = usePathname();
   const [user, setUser] = useState<SessionUser | null>(null);
-  
+
   const isProfilePage = pathname === "/app/profile";
 
   useEffect(() => {
@@ -43,8 +43,8 @@ export default function Header() {
       <div className="flex items-center space-x-4">
         {isProfilePage ? (
           <div className="flex items-center space-x-2">
-            <Link 
-              href="/app" 
+            <Link
+              href="/app"
               className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <IoMdArrowBack size={16} className="mr-1" />

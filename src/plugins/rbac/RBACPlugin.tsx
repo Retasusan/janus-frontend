@@ -78,17 +78,17 @@ function RBACContent({ channel }: RBACPluginProps) {
 
       if (rolesRes.ok) {
         const rolesData = await rolesRes.json();
-        setRoles(rolesData);
+        setRoles(Array.isArray(rolesData) ? rolesData : rolesData.roles || []);
       }
 
       if (permissionsRes.ok) {
         const permissionsData = await permissionsRes.json();
-        setPermissions(permissionsData.permissions || []);
+        setPermissions(Array.isArray(permissionsData) ? permissionsData : permissionsData.permissions || []);
       }
 
       if (membersRes.ok) {
         const membersData = await membersRes.json();
-        setMembers(membersData.members || []);
+        setMembers(Array.isArray(membersData) ? membersData : membersData.members || []);
       }
     } catch (error) {
       console.error('データの読み込みに失敗しました:', error);

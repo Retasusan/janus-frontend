@@ -1,8 +1,8 @@
-import { pluginRegistry } from './pluginRegistry';
-import { textChannelPlugin } from '@/plugins/chat/TextChannelPlugin';
-import { fileSharePlugin } from '@/plugins/file-share/FileSharePlugin';
-import { calendarPlugin } from '@/plugins/calendar/CalendarPlugin';
-import RBACPlugin from '@/plugins/rbac/RBACPlugin';
+import { calendarPlugin } from "@/plugins/calendar/CalendarPlugin";
+import { textChannelPlugin } from "@/plugins/chat/TextChannelPlugin";
+import { fileSharePlugin } from "@/plugins/file-share/FileSharePlugin";
+import RBACPlugin from "@/plugins/rbac/RBACPlugin";
+import { pluginRegistry } from "./pluginRegistry";
 
 // プラグインを登録する関数
 export function initializePlugins() {
@@ -11,7 +11,7 @@ export function initializePlugins() {
   pluginRegistry.register(fileSharePlugin);
   pluginRegistry.register(calendarPlugin);
   pluginRegistry.register(RBACPlugin);
-  
+
   // 他のプラグインもここで登録
   // pluginRegistry.register(wikiPlugin);
   // pluginRegistry.register(whiteboardPlugin);
@@ -20,6 +20,6 @@ export function initializePlugins() {
 }
 
 // アプリケーション起動時に呼び出す
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   initializePlugins();
 }
