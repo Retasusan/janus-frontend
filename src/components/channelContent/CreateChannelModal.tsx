@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { ChannelType, CreateChannelRequest } from '@/types/channel';
 import { pluginRegistry } from '@/lib/pluginRegistry';
+import { useToast } from '@/hooks/use-toast';
+import { FiCheck, FiX } from 'react-icons/fi';
 
 interface Props {
   serverId: number;
@@ -17,6 +19,7 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
   const [description, setDescription] = useState('');
   const [settings, setSettings] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const availablePlugins = pluginRegistry.getAll();
 
@@ -38,14 +41,27 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
         settings: Object.keys(settings).length > 0 ? settings : undefined,
       });
       
+      // 成功トースト
+      const selectedPlugin = pluginRegistry.get(selectedType);
+      toast({
+        variant: "success",
+        title: "チャンネル作成完了",
+        description: `${selectedPlugin?.meta.name}チャンネル「${channelName}」を作成しました。`,
+      });
+      
       // リセット
       setSelectedType(null);
       setChannelName('');
       setDescription('');
       setSettings({});
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('チャンネル作成エラー:', error);
+      toast({
+        variant: "destructive",
+        title: "チャンネル作成失敗",
+        description: error.message || "チャンネルの作成に失敗しました。権限を確認してください。",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -158,16 +174,18 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
               disabled={isSubmitting}
             >
+              <FiX className="mr-1 h-4 w-4" />
               キャンセル
             </button>
             <button
               type="submit"
               disabled={!selectedType || !channelName.trim() || isSubmitting}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
             >
+              <FiCheck className="mr-1 h-4 w-4" />
               {isSubmitting ? '作成中...' : '作成'}
             </button>
           </div>

@@ -6,6 +6,7 @@ import { IoMdAdd } from "react-icons/io";
 import CreateChannelModal from "@/components/channelContent/CreateChannelModal";
 import { pluginRegistry } from "@/lib/pluginRegistry";
 import { ChannelType, type CreateChannelRequest } from "@/types/channel";
+import { useToast } from "@/hooks/use-toast";
 import "@/lib/initializePlugins"; // プラグインを初期化
 
 export type Server = {
@@ -38,19 +39,27 @@ export default function ChannelSidebar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchChannels = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/servers/${server.id}/channels`, {
-          credentials: "include",
+      const res = await fetch(`/api/servers/${server.id}/channels`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMessage = errorData.error || `HTTP ${res.status}: チャンネル取得に失敗しました`;
+        console.error("Channel fetch error details:", {
+          status: res.status,
+          errorData,
+          serverId: server.id
         });
-
-        if (!res.ok) throw new Error(`Channel fetch error ${res.status}`);
-
-        const responseData = await res.json();
+        throw new Error(errorMessage);
+      }        const responseData = await res.json();
 
         // エラーレスポンスの場合
         if (responseData.error) {
@@ -75,6 +84,11 @@ export default function ChannelSidebar({
         }
       } catch (err: any) {
         setError(err.message);
+        toast({
+          variant: "destructive",
+          title: "チャンネル読み込みエラー",
+          description: "チャンネル一覧の読み込みに失敗しました。ページを再読み込みしてください。",
+        });
         console.error("Channel fetch error:", err);
       } finally {
         setLoading(false);
@@ -93,7 +107,10 @@ export default function ChannelSidebar({
         body: JSON.stringify(data),
       });
 
-      if (!res.ok) throw new Error(`Channel create error ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}: チャンネル作成に失敗しました`);
+      }
 
       const newChannel: Channel = await res.json();
       const channelWithServerId = {
@@ -105,7 +122,9 @@ export default function ChannelSidebar({
       setChannels((prev) => [...prev, channelWithServerId]);
       onSelectChannel(channelWithServerId);
     } catch (err: any) {
-      alert(`チャンネル作成エラー: ${err.message}`);
+      console.error("チャンネル作成エラー:", err);
+      // エラーはCreateChannelModalで処理されるので、ここで再throw
+      throw err;
     }
   };
 

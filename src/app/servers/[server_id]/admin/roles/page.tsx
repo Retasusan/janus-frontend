@@ -2,7 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { AdminGate } from '@/components/rbac/PermissionGate';
-import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2 } from 'react-icons/fi';
+import { FiUsers, FiShield, FiSettings, FiEdit3, FiTrash2, FiAlertTriangle, FiCheck, FiX } from 'react-icons/fi';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Role {
   id: number;
@@ -48,6 +68,13 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
   const [activeTab, setActiveTab] = useState<'roles' | 'members'>('roles');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showRoleAssignModal, setShowRoleAssignModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'role_change' | 'member_remove';
+    member?: Member;
+    role?: Role;
+    show: boolean;
+  }>({ type: 'role_change', show: false });
+  const { toast } = useToast();
 
   useEffect(() => {
     loadData();
@@ -64,14 +91,31 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
       if (rolesRes.ok) {
         const rolesData = await rolesRes.json();
         setRoles(rolesData);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "エラー",
+          description: "ロール情報の読み込みに失敗しました。",
+        });
       }
 
       if (membersRes.ok) {
         const membersData = await membersRes.json();
         setMembers(membersData.members || []);
+      } else {
+        toast({
+          variant: "destructive", 
+          title: "エラー",
+          description: "メンバー情報の読み込みに失敗しました。",
+        });
       }
     } catch (error) {
       console.error('データの読み込みに失敗しました:', error);
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: "データの読み込み中にエラーが発生しました。",
+      });
     } finally {
       setLoading(false);
     }
@@ -90,13 +134,92 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
         await loadData(); // データを再読み込み
         setShowRoleAssignModal(false);
         setSelectedMember(null);
+        
+        const selectedRole = roles.find(r => r.id === roleId);
+        toast({
+          variant: "success",
+          title: "ロール変更完了",
+          description: `${selectedMember?.userName}のロールを${selectedRole?.name}に変更しました。`,
+        });
       } else {
-        const error = await res.json();
-        console.error('ロール割り当てに失敗しました:', error);
+        const errorData = await res.json();
+        toast({
+          variant: "destructive",
+          title: "ロール変更失敗",
+          description: errorData.error || "ロールの変更に失敗しました。",
+        });
       }
     } catch (error) {
       console.error('ロール割り当てに失敗しました:', error);
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: "ロール変更中にエラーが発生しました。",
+      });
     }
+  };
+
+  const handleRoleChangeConfirm = (member: Member, role: Role) => {
+    setConfirmAction({
+      type: 'role_change',
+      member,
+      role,
+      show: true
+    });
+  };
+
+  const executRoleChange = () => {
+    if (confirmAction.member && confirmAction.role) {
+      assignRole(confirmAction.member.userAuth0Id, confirmAction.role.id);
+    }
+    setConfirmAction({ type: 'role_change', show: false });
+  };
+
+  const removeMember = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/servers/${server_id}/members/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        await loadData();
+        toast({
+          variant: "success",
+          title: "メンバー削除完了",
+          description: "メンバーをサーバーから削除しました。",
+        });
+      } else {
+        const errorData = await res.json();
+        toast({
+          variant: "destructive",
+          title: "メンバー削除失敗",
+          description: errorData.error || "メンバーの削除に失敗しました。",
+        });
+      }
+    } catch (error) {
+      console.error('メンバー削除に失敗しました:', error);
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: "メンバー削除中にエラーが発生しました。",
+      });
+    }
+  };
+
+  const handleMemberRemoveConfirm = (member: Member) => {
+    setConfirmAction({
+      type: 'member_remove',
+      member,
+      show: true
+    });
+  };
+
+  const executeMemberRemove = () => {
+    if (confirmAction.member) {
+      removeMember(confirmAction.member.userAuth0Id);
+    }
+    setConfirmAction({ type: 'member_remove', show: false });
   };
 
   if (loading) {
@@ -272,15 +395,25 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => {
-                          setSelectedMember(member);
-                          setShowRoleAssignModal(true);
-                        }}
-                        className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700"
-                      >
-                        ロール変更
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setShowRoleAssignModal(true);
+                          }}
+                          className="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 flex items-center"
+                        >
+                          <FiEdit3 className="mr-1 h-3 w-3" />
+                          ロール変更
+                        </button>
+                        <button
+                          onClick={() => handleMemberRemoveConfirm(member)}
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 flex items-center"
+                        >
+                          <FiTrash2 className="mr-1 h-3 w-3" />
+                          削除
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -300,8 +433,8 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
                 {roles.map((role) => (
                   <button
                     key={role.id}
-                    onClick={() => assignRole(selectedMember.userAuth0Id, role.id)}
-                    className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    onClick={() => handleRoleChangeConfirm(selectedMember, role)}
+                    className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center space-x-3">
                       <div
@@ -337,6 +470,54 @@ export default function RoleManagementPage({ params }: RoleManagementPageProps) 
             </div>
           </div>
         )}
+
+        {/* 確認ダイアログ */}
+        <AlertDialog open={confirmAction.show} onOpenChange={(open) => setConfirmAction({ ...confirmAction, show: open })}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <FiAlertTriangle className="mr-2 h-5 w-5 text-yellow-500" />
+                {confirmAction.type === 'role_change' ? 'ロール変更の確認' : 'メンバー削除の確認'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirmAction.type === 'role_change' ? (
+                  <>
+                    <strong>{confirmAction.member?.userName}</strong> のロールを <strong>{confirmAction.role?.name}</strong> に変更しますか？
+                    <br />
+                    <span className="text-sm text-gray-500 mt-2 block">
+                      この操作により、ユーザーの権限が変更されます。
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <strong>{confirmAction.member?.userName}</strong> をこのサーバーから削除しますか？
+                    <br />
+                    <span className="text-sm text-red-500 mt-2 block font-medium">
+                      この操作は取り消すことができません。
+                    </span>
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="flex items-center">
+                <FiX className="mr-1 h-4 w-4" />
+                キャンセル
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmAction.type === 'role_change' ? executRoleChange : executeMemberRemove}
+                className={`flex items-center ${
+                  confirmAction.type === 'member_remove' 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                <FiCheck className="mr-1 h-4 w-4" />
+                {confirmAction.type === 'role_change' ? '変更する' : '削除する'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminGate>
   );

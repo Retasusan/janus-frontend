@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FiShare2, FiUserPlus, FiSettings } from "react-icons/fi";
+import { FiShare2, FiUserPlus, FiSettings, FiCheck, FiX } from "react-icons/fi";
 import { IoMdAdd } from "react-icons/io";
 import InviteCodeModal from "../server/InviteCodeModal";
 import JoinServerModal from "../server/JoinServerModal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { AdminGate } from "../rbac/PermissionGate";
+import { useToast } from "@/hooks/use-toast";
 
 export type Server = {
   id: number;
@@ -41,6 +42,7 @@ export default function ServerSidebar({
   const [error, setError] = useState<string | null>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const { toast } = useToast();
 
   const handleAddServer = async () => {
     const name = prompt("新しいサーバー名を入力してください:");
@@ -55,7 +57,11 @@ export default function ServerSidebar({
         body: JSON.stringify({ name }),
       });
 
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}: サーバー作成に失敗しました`);
+      }
+      
       const newServer: Server = await res.json();
 
       const updatedServers = [
@@ -70,9 +76,21 @@ export default function ServerSidebar({
 
       onServersUpdate(updatedServers);
       onSelectServer(newServer);
+      
+      toast({
+        variant: "success",
+        title: "サーバー作成完了",
+        description: `「${name}」サーバーを作成しました。`,
+      });
+      
       router.push(`/app/servers/${newServer.id}/channels/1`);
     } catch (err: any) {
-      alert(`サーバー作成エラー: ${err.message}`);
+      console.error("サーバー作成エラー:", err);
+      toast({
+        variant: "destructive",
+        title: "サーバー作成失敗",
+        description: err.message || "サーバーの作成に失敗しました。",
+      });
     } finally {
       setLoading(false);
     }
@@ -122,8 +140,21 @@ export default function ServerSidebar({
 
       onServersUpdate(updatedServers);
       onSelectServer(joinedServer);
+      
+      toast({
+        variant: "success",
+        title: "サーバー参加完了",
+        description: `「${joinedServer.name}」サーバーに参加しました。`,
+      });
+      
       router.push(`/app/servers/${joinedServer.id}/channels/1`);
     } catch (err: any) {
+      console.error("サーバー参加エラー:", err);
+      toast({
+        variant: "destructive",
+        title: "サーバー参加失敗", 
+        description: err.message || "サーバーへの参加に失敗しました。",
+      });
       throw new Error(err.message || "サーバーへの参加に失敗しました");
     }
   };

@@ -1,5 +1,6 @@
 import { Auth0Provider } from "@auth0/nextjs-auth0";
 import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="ja" className="h-full">
       <Auth0Provider>
-        <body className="h-full">{children}</body>
+        <body className="h-full">
+          {children}
+          <Toaster />
+        </body>
       </Auth0Provider>
     </html>
   );
