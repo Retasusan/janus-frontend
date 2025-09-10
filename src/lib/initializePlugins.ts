@@ -2,6 +2,7 @@ import { pluginRegistry } from './pluginRegistry';
 import { textChannelPlugin } from '@/plugins/chat/TextChannelPlugin';
 import { fileSharePlugin } from '@/plugins/file-share/FileSharePlugin';
 import { calendarPlugin } from '@/plugins/calendar/CalendarPlugin';
+import RBACPlugin from '@/plugins/rbac/RBACPlugin';
 
 // プラグインを登録する関数
 export function initializePlugins() {
@@ -9,6 +10,7 @@ export function initializePlugins() {
   pluginRegistry.register(textChannelPlugin);
   pluginRegistry.register(fileSharePlugin);
   pluginRegistry.register(calendarPlugin);
+  pluginRegistry.register(RBACPlugin);
   
   // 他のプラグインもここで登録
   // pluginRegistry.register(wikiPlugin);

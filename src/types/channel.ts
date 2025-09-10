@@ -8,6 +8,7 @@ export enum ChannelType {
   SURVEY = 'survey',
   WHITEBOARD = 'whiteboard',
   WIKI = 'wiki',
+  RBAC = 'rbac',
 }
 
 // 基本的なチャンネル型
