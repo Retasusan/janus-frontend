@@ -7,6 +7,7 @@ import CreateChannelModal from "@/components/channelContent/CreateChannelModal";
 import { pluginRegistry } from "@/lib/pluginRegistry";
 import { ChannelType, type CreateChannelRequest } from "@/types/channel";
 import { useToast } from "@/hooks/use-toast";
+import { ChannelSidebarSkeleton } from "./ChannelSkeleton";
 import "@/lib/initializePlugins"; // プラグインを初期化
 
 export type Server = {
@@ -128,8 +129,7 @@ export default function ChannelSidebar({
     }
   };
 
-  if (loading)
-    return <p className="text-gray-400 text-xs px-2 py-1">読み込み中...</p>;
+  if (loading) return <ChannelSidebarSkeleton />;
 
   if (error) return <p className="text-red-500 text-xs px-2 py-1">{error}</p>;
 
