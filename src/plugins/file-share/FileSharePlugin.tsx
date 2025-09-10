@@ -161,7 +161,7 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center min-h-full">
                 <div className="text-gray-500">ファイルを読み込み中...</div>
             </div>
         );
@@ -170,7 +170,7 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
     return (
         <div className="flex flex-col h-full">
             {/* ヘッダー */}
-            <div className="h-16 flex items-center px-4 border-b border-gray-300 bg-white shadow-sm">
+            <div className="h-16 flex items-center px-4 border-b border-gray-300 bg-white shadow-sm flex-shrink-0">
                 <div className="flex items-center">
                     <span className="text-gray-500 mr-2">📁</span>
                     <h1 className="text-lg font-semibold text-gray-800">{channel.name}</h1>
@@ -217,7 +217,7 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
             )}
 
             {/* ファイル一覧 */}
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4">
                 {files.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
                         <p>まだファイルがアップロードされていません</p>

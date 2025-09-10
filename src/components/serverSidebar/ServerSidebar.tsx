@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FiShare2, FiUserPlus, FiSettings, FiCheck, FiX } from "react-icons/fi";
 import { IoMdAdd } from "react-icons/io";
-import { FiUserPlus, FiShare2 } from "react-icons/fi";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import JoinServerModal from "../server/JoinServerModal";
 import InviteCodeModal from "../server/InviteCodeModal";
+import JoinServerModal from "../server/JoinServerModal";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { AdminGate } from "../rbac/PermissionGate";
+import { useToast } from "@/hooks/use-toast";
 
 export type Server = {
   id: number;
@@ -40,6 +42,7 @@ export default function ServerSidebar({
   const [error, setError] = useState<string | null>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const { toast } = useToast();
 
   const handleAddServer = async () => {
     const name = prompt("新しいサーバー名を入力してください:");
@@ -54,7 +57,11 @@ export default function ServerSidebar({
         body: JSON.stringify({ name }),
       });
 
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}: サーバー作成に失敗しました`);
+      }
+      
       const newServer: Server = await res.json();
 
       const updatedServers = [
@@ -69,9 +76,21 @@ export default function ServerSidebar({
 
       onServersUpdate(updatedServers);
       onSelectServer(newServer);
+      
+      toast({
+        variant: "success",
+        title: "サーバー作成完了",
+        description: `「${name}」サーバーを作成しました。`,
+      });
+      
       router.push(`/app/servers/${newServer.id}/channels/1`);
     } catch (err: any) {
-      alert(`サーバー作成エラー: ${err.message}`);
+      console.error("サーバー作成エラー:", err);
+      toast({
+        variant: "destructive",
+        title: "サーバー作成失敗",
+        description: err.message || "サーバーの作成に失敗しました。",
+      });
     } finally {
       setLoading(false);
     }
@@ -121,8 +140,21 @@ export default function ServerSidebar({
 
       onServersUpdate(updatedServers);
       onSelectServer(joinedServer);
+      
+      toast({
+        variant: "success",
+        title: "サーバー参加完了",
+        description: `「${joinedServer.name}」サーバーに参加しました。`,
+      });
+      
       router.push(`/app/servers/${joinedServer.id}/channels/1`);
     } catch (err: any) {
+      console.error("サーバー参加エラー:", err);
+      toast({
+        variant: "destructive",
+        title: "サーバー参加失敗", 
+        description: err.message || "サーバーへの参加に失敗しました。",
+      });
       throw new Error(err.message || "サーバーへの参加に失敗しました");
     }
   };
@@ -134,11 +166,11 @@ export default function ServerSidebar({
   };
 
   return (
-    <div className="w-14 bg-gray-900 text-gray-600 h-full flex flex-col items-center py-3 space-y-2">
+    <div className="w-14 bg-gray-900 text-gray-600 min-h-screen flex flex-col items-center py-3 space-y-2">
       {loading && <p className="text-gray-500 text-xs">読み込み中...</p>}
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
-      <div className="flex flex-col items-center space-y-2 flex-1">
+      <div className="flex flex-col items-center space-y-2 overflow-y-auto">
         {servers.map((server) => {
           const isSelected = selectedServer?.id === server.id;
           return (
@@ -175,7 +207,9 @@ export default function ServerSidebar({
                 {/* ツールチップ */}
                 <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {server.name}
-                  <div className="text-xs opacity-75 mt-1">右クリックで招待</div>
+                  <div className="text-xs opacity-75 mt-1">
+                    右クリックで招待
+                  </div>
                 </div>
               </button>
             </div>
@@ -213,6 +247,20 @@ export default function ServerSidebar({
         >
           <FiShare2 size={18} />
         </button>
+      )}
+
+      {/* 権限管理ボタン（Admin専用） */}
+      {selectedServer && (
+        <AdminGate serverId={selectedServer.id.toString()}>
+          <button
+            type="button"
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:rounded-xl hover:bg-orange-600 text-white group"
+            onClick={() => router.push(`/servers/${selectedServer.id}/admin/roles`)}
+            title="権限管理（Admin専用）"
+          >
+            <FiSettings size={18} />
+          </button>
+        </AdminGate>
       )}
 
       {/* モーダル */}

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
+import { useEffect, useState } from "react";
 import ChannelContent from "../../components/channelContent/ChannelContent";
+import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
 import Header from "../../components/header/Header";
 import ServerSidebar from "../../components/serverSidebar/ServerSidebar";
 
@@ -62,20 +62,18 @@ export default function RootLayout({
   // プロファイルページの場合は異なるレイアウトを使用
   if (isProfilePage) {
     return (
-      <div className="h-screen flex flex-col">
+      <div className="min-h-screen">
         <Header />
-        <div className="flex-1 overflow-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-auto">{children}</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen">
       <Header />
 
-      <div className="flex flex-2 overflow-hidden">
+      <div className="flex">
         <ServerSidebar
           onSelectServer={setSelectedServer}
           selectedServer={selectedServer}
@@ -84,20 +82,22 @@ export default function RootLayout({
         />
 
         {selectedServer && (
-          <ChannelSidebar 
-            server={selectedServer} 
+          <ChannelSidebar
+            server={selectedServer}
             selectedChannel={selectedChannel}
             onSelectChannel={setSelectedChannel}
           />
         )}
 
-        <div className="flex-1 bg-gray-200 overflow-hidden">
+        <div className="flex-1 bg-gray-200 min-h-screen">
           {selectedChannel ? (
             <ChannelContent channel={selectedChannel} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center text-gray-500">
-                <h2 className="text-xl font-semibold mb-2">チャンネルを選択してください</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                  チャンネルを選択してください
+                </h2>
                 <p>左側のサーバーからチャンネルを選択してください</p>
               </div>
             </div>

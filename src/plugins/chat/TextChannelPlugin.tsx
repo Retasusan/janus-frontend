@@ -92,7 +92,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-full">
         <div className="text-gray-500">メッセージを読み込み中...</div>
       </div>
     );
@@ -100,7 +100,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center min-h-full">
         <div className="text-red-500">エラー: {error}</div>
       </div>
     );
@@ -109,7 +109,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
   return (
     <div className="flex flex-col h-full">
       {/* チャンネルヘッダー */}
-      <div className="h-16 flex items-center px-4 border-b border-gray-300 bg-white shadow-sm">
+      <div className="h-16 flex items-center px-4 border-b border-gray-300 bg-white shadow-sm flex-shrink-0">
         <div className="flex items-center">
           <span className="text-gray-500 mr-2">#</span>
           <h1 className="text-lg font-semibold text-gray-800">{channel.name}</h1>
@@ -120,7 +120,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
       </div>
 
       {/* メッセージエリア */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <h3 className="text-xl font-semibold mb-2">#{channel.name} へようこそ！</h3>
@@ -145,7 +145,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
       </div>
 
       {/* メッセージ入力エリア */}
-      <div className="p-4 border-t border-gray-300 bg-white">
+      <div className="p-4 border-t border-gray-300 bg-white flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <input
             type="text"
