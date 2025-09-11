@@ -7,10 +7,13 @@ import { FiUserPlus, FiShare2 } from "react-icons/fi";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import JoinServerModal from "../server/JoinServerModal";
 import InviteCodeModal from "../server/InviteCodeModal";
+import ModalPortal from "../ui/ModalPortal";
 
 export type Server = {
   id: number;
   name: string;
+  icon?: string;
+  api_token?: string;
   src?: string;
   fallback?: string;
   url?: string;
@@ -156,6 +159,33 @@ export default function ServerSidebar({
       onServersUpdate(updatedServers);
     } catch (error) {
       alert(`サーバーの更新に失敗しました: ${error}`);
+    }
+  };
+
+  const handleGenerateToken = async (server: Server) => {
+    try {
+      const res = await fetch(`/api/servers/${server.id}/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to generate token: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      // サーバーリストを更新
+      const updatedServers = servers.map(s => 
+        s.id === server.id ? { ...s, api_token: data.token } : s
+      );
+      onServersUpdate(updatedServers);
+      
+      // モーダルの状態も更新
+      setShowServerSettings({ ...server, api_token: data.token });
+    } catch (error) {
+      alert(`トークンの生成に失敗しました: ${error}`);
     }
   };
 
@@ -305,9 +335,38 @@ export default function ServerSidebar({
 
       {/* サーバー設定モーダル */}
       {showServerSettings && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-md mx-4 text-white">
-            <h2 className="text-2xl font-bold mb-6 text-center">サーバー設定</h2>
+        <ModalPortal isOpen={true}>
+          <div
+            style={{ pointerEvents: "auto" }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-lg mx-4 text-white">
+              <h2 className="text-2xl font-bold mb-6 text-center">サーバー設定</h2>
+              
+              {/* サーバートークン表示 */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  サーバートークン（SDK用）
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={showServerSettings.api_token || '未生成'}
+                    className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-mono text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateToken(showServerSettings)}
+                    className="px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white text-sm"
+                  >
+                    生成
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  このトークンを使ってJanus-SDKからサーバーにアクセスできます
+                </p>
+              </div>
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -345,8 +404,9 @@ export default function ServerSidebar({
                 </button>
               </div>
             </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );
