@@ -50,10 +50,24 @@ export default function ChannelSidebar({
         });
         if (!res.ok) throw new Error(`Channel fetch error ${res.status}`);
         const data: Channel[] = await res.json();
-        const channelsWithServerId = data.map((c) => ({
+        let channelsWithServerId = data.map((c) => ({
           ...c,
           serverId: server.id,
         }));
+
+        // if some channels are missing type, retry once to get normalized types from server
+        const missingType = channelsWithServerId.some((c) => !c.type);
+        if (missingType) {
+          try {
+            const res2 = await fetch(`/api/servers/${server.id}/channels`, { credentials: 'include' });
+            if (res2.ok) {
+              const data2: Channel[] = await res2.json();
+              channelsWithServerId = data2.map((c) => ({ ...c, serverId: server.id }));
+            }
+          } catch (e) {
+            // ignore retry error
+          }
+        }
         setChannels(channelsWithServerId);
         
         // 最初のチャンネルを自動選択（チャンネルがある場合）
@@ -100,50 +114,75 @@ export default function ChannelSidebar({
   if (error) return <p className="text-red-500 text-xs px-2 py-1">{error}</p>;
 
   return (
-    <div className="w-56 bg-gray-800 text-gray-200 h-full flex flex-col">
-      <div className="h-16 flex items-center px-4 border-b border-gray-700 font-bold">
-        {server.name}
+    <div className="w-64 bg-gray-800/95 backdrop-blur-sm border-r border-white/10 text-gray-100 h-full flex flex-col">
+      <div className="h-16 flex items-center px-6 border-b border-white/10 font-bold text-white bg-white/5">
+        <div className="flex items-center">
+          <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+          {server.name}
+        </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-2 py-3">
-        <div className="flex items-center justify-between px-2 mb-2 text-gray-400 uppercase text-xs font-semibold">
-          <span>Text Channels</span>
+      <div className="flex-1 overflow-auto px-4 py-4">
+        <div className="flex items-center justify-between px-3 mb-3 text-gray-300 uppercase text-xs font-semibold">
+          <span>チャンネル</span>
           <button
             type="button"
-            className="hover:text-white"
+            className="w-6 h-6 flex items-center justify-center rounded bg-white/10 hover:bg-white/20 transition-colors text-gray-300 hover:text-white"
             onClick={() => setShowCreateModal(true)}
           >
             <IoMdAdd size={16} />
           </button>
         </div>
 
-        <div className="flex flex-col space-y-1">
+        <div className="flex flex-col space-y-2">
           {channels.length === 0 ? (
-            <div className="px-2 py-4 text-center text-gray-400 text-sm">
-              <p className="mb-2">チャンネルがありません</p>
-              <p className="text-xs">「+」ボタンでチャンネルを作成してください</p>
+            <div className="px-3 py-6 text-center text-gray-400 text-sm bg-white/5 rounded-lg border border-white/10">
+              <p className="mb-2 text-gray-300">チャンネルがありません</p>
+              <p className="text-xs text-gray-400">「+」ボタンでチャンネルを作成してください</p>
             </div>
           ) : (
             channels.map((channel) => {
               const isSelected = selectedChannel?.id === channel.id;
               const channelType = channel.type || ChannelType.TEXT;
               const plugin = pluginRegistry.get(channelType);
-              
+
+              const handleSelect = async () => {
+                // if type is missing, re-fetch channels to get normalized type from server
+                if (!channel.type) {
+                  try {
+                    const res = await fetch(`/api/servers/${server.id}/channels`, { credentials: 'include' });
+                    if (res.ok) {
+                      const data: Channel[] = await res.json();
+                      const channelsWithServerId = data.map((c) => ({ ...c, serverId: server.id }));
+                      setChannels(channelsWithServerId);
+                      const fresh = channelsWithServerId.find((c) => c.id === channel.id);
+                      if (fresh) {
+                        onSelectChannel(fresh);
+                        return;
+                      }
+                    }
+                  } catch (e) {
+                    // ignore and fall back to original channel
+                  }
+                }
+                onSelectChannel(channel);
+              };
+
               return (
                 <button
                   key={channel.id}
                   type="button"
-                  onClick={() => onSelectChannel(channel)}
-                  className={`flex items-center px-2 py-1 rounded text-sm font-medium focus:outline-none transition-colors duration-150 ${
+                  onClick={handleSelect}
+                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium focus:outline-none transition-all duration-200 ${
                     isSelected
-                      ? "bg-gray-600 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                      ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white border border-purple-400/30 shadow-lg"
+                      : "text-gray-300 hover:bg-white/10 hover:text-white hover:translate-x-1"
                   }`}
                 >
-                  <span className="mr-2" style={{ color: plugin?.meta.color || '#6b7280' }}>
+                  <span className="mr-3 flex-shrink-0" style={{ color: plugin?.meta.color || '#9ca3af' }}>
                     {plugin?.meta.icon || <BiHash />}
                   </span>
-                  {channel.name}
+                  <span className="truncate">{channel.name}</span>
                 </button>
               );
             })

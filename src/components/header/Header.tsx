@@ -39,40 +39,46 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white h-10 pl-2 pr-5 py-2 flex justify-between items-center border-b border-gray-200">
+    <header className="bg-gray-800/95 backdrop-blur-sm h-12 pl-4 pr-6 py-3 flex justify-between items-center border-b border-white/10">
       <div className="flex items-center space-x-4">
         {isProfilePage ? (
           <div className="flex items-center space-x-2">
             <Link 
               href="/app" 
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center text-gray-300 hover:text-white transition-colors"
             >
               <IoMdArrowBack size={16} className="mr-1" />
               戻る
             </Link>
-            <span className="text-gray-400">|</span>
-            <span className="text-gray-900 font-medium">プロフィール</span>
+            <span className="text-gray-500">|</span>
+            <span className="text-white font-medium">プロフィール</span>
           </div>
         ) : (
-          <div className="font-semibold text-gray-900">Janus</div>
+          <div className="font-bold text-xl text-white flex items-center">
+            <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              Janus
+            </span>
+          </div>
         )}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger
           id={"user-dropdown-trigger"}
-          className="text-xs flex justify-between gap-2 m-1"
+          className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 text-sm flex justify-between items-center gap-2 text-white transition-all"
         >
           {user?.name ?? "ゲスト"}
-          <IoIosArrowDown className="mt-[2.2px]" />
+          <IoIosArrowDown className="w-3 h-3" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="mr-2 mt-1">
-          <DropdownMenuLabel>アカウント設定</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Janusについて</DropdownMenuItem>
-          <DropdownMenuItem>
+        <DropdownMenuContent className="mr-2 mt-1 bg-gray-800/95 backdrop-blur-sm border-white/20 text-white">
+          <DropdownMenuLabel className="text-gray-300">アカウント設定</DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-white/10" />
+          <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-white/10">
+            Janusについて
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-white/10">
             <Link href="/app/profile">プロフィール</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-white/10">
             <Link href="/auth/logout">ログアウト</Link>
           </DropdownMenuItem>
         </DropdownMenuContent>

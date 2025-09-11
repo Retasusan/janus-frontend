@@ -40,6 +40,8 @@ export default function ServerSidebar({
   const [error, setError] = useState<string | null>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; server: Server } | null>(null);
+  const [showServerSettings, setShowServerSettings] = useState<Server | null>(null);
 
   const handleAddServer = async () => {
     const name = prompt("新しいサーバー名を入力してください:");
@@ -77,53 +79,83 @@ export default function ServerSidebar({
     }
   };
 
-  const handleJoinServer = async (inviteCode: string) => {
+    const handleInviteServer = async (inviteCode: string) => {
+    const res = await fetch("/api/servers/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ inviteCode }),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message || `Failed to join server: ${res.status}`);
+    }
+
+    // サーバーリストを更新
+    const updatedRes = await fetch("/api/servers", { credentials: "include" });
+    if (updatedRes.ok) {
+      const updatedServers = await updatedRes.json();
+      onServersUpdate(updatedServers);
+    }
+  };
+
+  const handleRightClick = (e: React.MouseEvent, server: Server) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      server
+    });
+  };
+
+  const handleDeleteServer = async (server: Server) => {
+    if (!confirm(`サーバー「${server.name}」を削除しますか？この操作は取り消せません。`)) return;
+    
     try {
-      const res = await fetch("/api/servers/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`/api/servers/${server.id}`, {
+        method: "DELETE",
         credentials: "include",
-        body: JSON.stringify({ inviteCode }),
       });
 
       if (!res.ok) {
-        let errorMessage = `サーバーへの参加に失敗しました (${res.status})`;
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (jsonError) {
-          console.error("Failed to parse error response:", jsonError);
-          const textResponse = await res.text();
-          console.error("Raw response:", textResponse);
-        }
-        throw new Error(errorMessage);
+        throw new Error(`Failed to delete server: ${res.status}`);
       }
 
-      let joinedServer: Server;
-      try {
-        joinedServer = await res.json();
-      } catch (jsonError) {
-        console.error("Failed to parse success response:", jsonError);
-        const textResponse = await res.text();
-        console.error("Raw response:", textResponse);
-        throw new Error("サーバーからの応答を解析できませんでした");
-      }
-
-      const updatedServers = [
-        ...servers,
-        {
-          ...joinedServer,
-          url: `/app/servers/${joinedServer.id}/channels/1`,
-          src: joinedServer.src || "/default-server.png",
-          fallback: joinedServer.name[0],
-        },
-      ];
-
+      // サーバーリストを更新
+      const updatedServers = servers.filter(s => s.id !== server.id);
       onServersUpdate(updatedServers);
-      onSelectServer(joinedServer);
-      router.push(`/app/servers/${joinedServer.id}/channels/1`);
-    } catch (err: any) {
-      throw new Error(err.message || "サーバーへの参加に失敗しました");
+      
+      // 削除されたサーバーが選択されていた場合、選択を解除
+      if (selectedServer?.id === server.id) {
+        onSelectServer(updatedServers[0] || null);
+      }
+    } catch (error) {
+      alert(`サーバーの削除に失敗しました: ${error}`);
+    }
+    setContextMenu(null);
+  };
+
+  const handleUpdateServer = async (server: Server, newName: string) => {
+    try {
+      const res = await fetch(`/api/servers/${server.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to update server: ${res.status}`);
+      }
+
+      // サーバーリストを更新
+      const updatedServers = servers.map(s => 
+        s.id === server.id ? { ...s, name: newName } : s
+      );
+      onServersUpdate(updatedServers);
+    } catch (error) {
+      alert(`サーバーの更新に失敗しました: ${error}`);
     }
   };
 
@@ -134,38 +166,38 @@ export default function ServerSidebar({
   };
 
   return (
-    <div className="w-14 bg-gray-900 text-gray-600 h-full flex flex-col items-center py-3 space-y-2">
-      {loading && <p className="text-gray-500 text-xs">読み込み中...</p>}
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+    <div className="w-16 bg-gray-800/95 backdrop-blur-sm border-r border-white/10 text-gray-300 h-full flex flex-col items-center py-4 space-y-3">
+      {loading && <p className="text-gray-400 text-xs">読み込み中...</p>}
+      {error && <p className="text-red-400 text-xs">{error}</p>}
 
-      <div className="flex flex-col items-center space-y-2 flex-1">
+      <div className="flex flex-col items-center space-y-3 flex-1">
         {servers.map((server) => {
           const isSelected = selectedServer?.id === server.id;
           return (
             <div key={server.id} className="relative group">
               {/* 選択インジケーター */}
               <div
-                className={`absolute left-0 top-1/2 transform -translate-y-1/2 w-1 bg-white rounded-r-full transition-all duration-200 ${isSelected ? "h-8" : "h-0 group-hover:h-4"
+                className={`absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 bg-gradient-to-b from-purple-400 to-blue-400 rounded-r-full transition-all duration-200 ${isSelected ? "h-8" : "h-0 group-hover:h-4"
                   }`}
               />
 
               <button
                 type="button"
                 onClick={() => onSelectServer(server)}
-                onContextMenu={(e) => handleServerRightClick(e, server)}
-                className="relative ml-3 focus:outline-none"
+                onContextMenu={(e) => handleRightClick(e, server)}
+                className="relative focus:outline-none"
               >
                 <Avatar
-                  className={`w-10 h-10 mr-2 transition-all duration-200 ${isSelected
-                    ? "rounded-2xl"
-                    : "rounded-3xl group-hover:rounded-2xl"
+                  className={`w-12 h-12 transition-all duration-200 ${isSelected
+                    ? "rounded-2xl ring-2 ring-purple-400/50"
+                    : "rounded-full group-hover:rounded-2xl"
                     }`}
                 >
                   <AvatarImage src={server.src} alt={server.name} />
                   <AvatarFallback
-                    className={`transition-all duration-200 ${isSelected
-                      ? "rounded-2xl bg-indigo-600 text-white"
-                      : "rounded-3xl bg-gray-700 text-gray-300 group-hover:rounded-2xl group-hover:bg-indigo-500 group-hover:text-white"
+                    className={`transition-all duration-200 font-semibold ${isSelected
+                      ? "rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 text-white"
+                      : "rounded-full bg-white/10 text-gray-300 group-hover:rounded-2xl group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-blue-600 group-hover:text-white"
                       }`}
                   >
                     {server.fallback}
@@ -173,7 +205,7 @@ export default function ServerSidebar({
                 </Avatar>
 
                 {/* ツールチップ */}
-                <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-800/95 backdrop-blur-sm border border-white/20 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {server.name}
                   <div className="text-xs opacity-75 mt-1">右クリックで招待</div>
                 </div>
@@ -186,32 +218,32 @@ export default function ServerSidebar({
       {/* サーバー作成ボタン */}
       <button
         type="button"
-        className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:rounded-xl hover:bg-green-600 text-white group"
+        className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-gradient-to-br hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white group transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-green-400/50"
         onClick={handleAddServer}
         title="新しいサーバーを作成"
       >
-        <IoMdAdd size={22} />
+        <IoMdAdd size={24} />
       </button>
 
       {/* サーバー参加ボタン */}
       <button
         type="button"
-        className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:rounded-xl hover:bg-blue-600 text-white group"
+        className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-gradient-to-br hover:from-blue-500 hover:to-cyan-600 text-gray-300 hover:text-white group transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-blue-400/50"
         onClick={() => setShowJoinModal(true)}
         title="サーバーに参加"
       >
-        <FiUserPlus size={18} />
+        <FiUserPlus size={20} />
       </button>
 
       {/* 招待コード作成ボタン（選択されたサーバーがある場合のみ表示） */}
       {selectedServer && (
         <button
           type="button"
-          className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:rounded-xl hover:bg-purple-600 text-white group"
+          className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-gradient-to-br hover:from-purple-500 hover:to-indigo-600 text-gray-300 hover:text-white group transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-purple-400/50"
           onClick={() => setShowInviteModal(true)}
           title="招待コードを作成"
         >
-          <FiShare2 size={18} />
+          <FiShare2 size={20} />
         </button>
       )}
 
@@ -219,7 +251,7 @@ export default function ServerSidebar({
       <JoinServerModal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
-        onJoinServer={handleJoinServer}
+        onJoinServer={handleInviteServer}
       />
 
       <InviteCodeModal
@@ -227,6 +259,95 @@ export default function ServerSidebar({
         onClose={() => setShowInviteModal(false)}
         server={selectedServer}
       />
+
+      {/* コンテキストメニュー */}
+      {contextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-[60]" 
+            onClick={() => setContextMenu(null)}
+          />
+          <div 
+            className="fixed bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-2xl z-[70] py-2 min-w-48"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            <button
+              onClick={() => {
+                setShowServerSettings(contextMenu.server);
+                setContextMenu(null);
+              }}
+              className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
+            >
+              <span>⚙️</span>
+              <span>サーバー設定</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowInviteModal(true);
+                setContextMenu(null);
+              }}
+              className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
+            >
+              <span>🔗</span>
+              <span>招待リンク</span>
+            </button>
+            <hr className="border-white/10 my-1" />
+            <button
+              onClick={() => handleDeleteServer(contextMenu.server)}
+              className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center space-x-2"
+            >
+              <span>🗑️</span>
+              <span>サーバーを削除</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* サーバー設定モーダル */}
+      {showServerSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-md mx-4 text-white">
+            <h2 className="text-2xl font-bold mb-6 text-center">サーバー設定</h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const newName = formData.get('serverName') as string;
+              if (newName.trim()) {
+                handleUpdateServer(showServerSettings, newName.trim());
+                setShowServerSettings(null);
+              }
+            }}>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  サーバー名
+                </label>
+                <input
+                  name="serverName"
+                  type="text"
+                  defaultValue={showServerSettings.name}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowServerSettings(null)}
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-gray-300 font-medium transition-all"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 rounded-xl text-white font-medium transition-all transform hover:-translate-y-1"
+                >
+                  保存
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

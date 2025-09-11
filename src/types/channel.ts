@@ -2,12 +2,17 @@
 export enum ChannelType {
   TEXT = 'text',
   VOICE = 'voice',
+  FORUM = 'forum',
   CALENDAR = 'calendar',
   FILE_SHARE = 'file-share',
   PROJECT = 'project',
   SURVEY = 'survey',
   WHITEBOARD = 'whiteboard',
   WIKI = 'wiki',
+  BUDGET = 'budget',
+  INVENTORY = 'inventory',
+  PHOTOS = 'photos',
+  DIARY = 'diary',
 }
 
 // 基本的なチャンネル型
