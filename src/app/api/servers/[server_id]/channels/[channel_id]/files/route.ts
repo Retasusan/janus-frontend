@@ -27,15 +27,32 @@ export async function POST(
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   const formData = await req.formData();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
-      body: formData as any,
-    },
-  );
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
+        body: formData as any,
+      },
+    );
+
+    if (res.ok) {
+      // アップロード成功後、最新のファイル一覧を取得
+      const filesRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files`,
+        { headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` } },
+      );
+      const filesData = await filesRes.json();
+      return NextResponse.json(filesData, { status: 200 });
+    }
+
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
