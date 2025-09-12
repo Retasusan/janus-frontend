@@ -259,7 +259,10 @@ export default function ServerSidebar({
       <button
         type="button"
         className="w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-gradient-to-br hover:from-blue-500 hover:to-cyan-600 text-gray-300 hover:text-white group transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-blue-400/50"
-        onClick={() => setShowJoinModal(true)}
+        onClick={() => {
+          console.log('Join button clicked - opening modal');
+          setShowJoinModal(true);
+        }}
         title="サーバーに参加"
       >
         <FiUserPlus size={20} />

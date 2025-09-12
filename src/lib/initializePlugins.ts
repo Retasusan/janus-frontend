@@ -8,7 +8,6 @@ import { surveyPlugin } from '@/plugins/survey/SurveyPlugin';
 import { tasksPlugin } from '@/plugins/tasks/TasksPlugin';
 import { budgetPlugin } from '@/plugins/budget/BudgetPlugin';
 import { inventoryPlugin } from '@/plugins/inventory/InventoryPlugin';
-import { photosPlugin } from '@/plugins/photos/PhotosPlugin';
 import { diaryPlugin } from '@/plugins/diary/DiaryPlugin';
 
 // プラグインを登録する関数
@@ -24,7 +23,6 @@ export function initializePlugins() {
   pluginRegistry.register(tasksPlugin);
   pluginRegistry.register(budgetPlugin);
   pluginRegistry.register(inventoryPlugin);
-  pluginRegistry.register(photosPlugin);
   pluginRegistry.register(diaryPlugin);
   
   // 他のプラグインもここで登録

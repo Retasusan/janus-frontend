@@ -26,7 +26,9 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
   const [replyTo, setReplyTo] = useState<any | null>(null);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<string>("");
+  const [autoScroll, setAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const initialLoadRef = useRef<boolean>(true);
 
   // 現在のユーザー情報を取得
@@ -103,10 +105,35 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
     return () => clearInterval(interval);
   }, [channel, currentUser]);
 
-  // メッセージが更新されたら最下部にスクロール
+  // メッセージが更新されたら自動スクロールが有効な場合のみ最下部にスクロール
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (autoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, autoScroll]);
+
+  // スクロール位置を監視して自動スクロールを制御
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      
+      // ユーザーが手動でスクロールして底から離れた場合は自動スクロールを無効に
+      if (!isNearBottom && autoScroll) {
+        setAutoScroll(false);
+      }
+      // ユーザーが底に戻った場合は自動スクロールを有効に
+      else if (isNearBottom && !autoScroll) {
+        setAutoScroll(true);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [autoScroll]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,8 +233,30 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-gray-800">
+      {/* ヘッダー */}
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5 backdrop-blur-sm">
+        <h3 className="text-lg font-semibold text-white flex items-center">
+          <span className="mr-2">#</span>
+          {channel.name}
+        </h3>
+        <button
+          onClick={() => setAutoScroll(!autoScroll)}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            autoScroll 
+              ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
+              : 'bg-red-500/20 text-red-400 border border-red-400/30'
+          }`}
+          title={autoScroll ? '自動スクロール: 有効' : '自動スクロール: 無効'}
+        >
+          {autoScroll ? '🔄 自動' : '⏸️ 手動'}
+        </button>
+      </div>
+
       {/* メッセージエリア */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center space-y-4">
@@ -232,9 +281,12 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                 {/* アバター（左側メッセージのみ） */}
                 {!msg.is_own && (
                   <Avatar className="w-10 h-10 mr-3 mt-1 flex-shrink-0">
-                    <AvatarImage src={msg.author_avatar} alt={msg.author || msg.author_name} />
+                    <AvatarImage 
+                      src={msg.author?.avatar_url || msg.author_avatar} 
+                      alt={msg.author?.display_name || msg.author_name || msg.author} 
+                    />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm">
-                      {(msg.author || msg.author_name || 'U')[0].toUpperCase()}
+                      {((msg.author?.display_name || msg.author_name || msg.author || 'U').toString())[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -247,7 +299,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                         <Avatar className="w-4 h-4">
                           <AvatarImage src={repliedMsg.author_avatar} alt={repliedMsg.author} />
                           <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs">
-                            {(repliedMsg.author || 'U')[0].toUpperCase()}
+                            {((repliedMsg.author || 'U').toString())[0]?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <p className="text-xs text-gray-400">
@@ -269,7 +321,9 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                     }`}
                   >
                     {!msg.is_own && (
-                      <p className="text-xs font-semibold mb-1 text-gray-300">{msg.author}</p>
+                      <p className="text-xs font-semibold mb-1 text-gray-300">
+                        {msg.author?.display_name || msg.author_name || msg.author || 'Unknown User'}
+                      </p>
                     )}
                     <p className="break-words">{msg.content}</p>
                     <p className={`text-xs mt-1 ${msg.is_own ? 'text-white/70' : 'text-gray-400'}`}>
@@ -320,7 +374,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                   <Avatar className="w-10 h-10 ml-3 mt-1 flex-shrink-0">
                     <AvatarImage src={msg.author_avatar} alt={msg.author || msg.author_name} />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm">
-                      {(msg.author || msg.author_name || 'U')[0].toUpperCase()}
+                      {((msg.author || msg.author_name || 'U').toString())[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -339,7 +393,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
               <Avatar className="w-6 h-6">
                 <AvatarImage src={replyTo.author_avatar} alt={replyTo.author} />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs">
-                  {(replyTo.author || 'U')[0].toUpperCase()}
+                  {((replyTo.author || 'U').toString())[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>

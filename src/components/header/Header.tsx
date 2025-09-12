@@ -56,7 +56,7 @@ export default function Header() {
         ) : (
           <div className="font-bold text-xl text-white flex items-center">
             <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-              Janus
+              Co:Lab
             </span>
           </div>
         )}
@@ -72,9 +72,6 @@ export default function Header() {
         <DropdownMenuContent className="mr-2 mt-1 bg-gray-800/95 backdrop-blur-sm border-white/20 text-white">
           <DropdownMenuLabel className="text-gray-300">アカウント設定</DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-white/10" />
-          <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-white/10">
-            Janusについて
-          </DropdownMenuItem>
           <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-white/10">
             <Link href="/app/profile">プロフィール</Link>
           </DropdownMenuItem>

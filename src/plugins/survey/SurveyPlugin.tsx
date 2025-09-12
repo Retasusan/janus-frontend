@@ -100,13 +100,6 @@ function SurveyContent({ channel }: { channel: BaseChannel }) {
             </h1>
             <p className="text-gray-300">みんなの意見を集めよう • {surveys.length} 件のアンケート</p>
           </div>
-          <button 
-            onClick={() => {/* Toggle create form */}}
-            className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 px-6 py-3 rounded-xl font-medium text-white transition-all transform hover:-translate-y-1 hover:shadow-lg flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>アンケート作成</span>
-          </button>
         </div>
       </div>
 

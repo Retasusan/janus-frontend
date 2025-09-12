@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface ModalPortalProps {
@@ -9,30 +9,33 @@ interface ModalPortalProps {
 }
 
 export default function ModalPortal({ children, isOpen }: ModalPortalProps) {
-  const portalRef = useRef<HTMLElement | null>(null);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      let portalRoot = document.getElementById('modal-portal');
-      if (!portalRoot) {
-        portalRoot = document.createElement('div');
-        portalRoot.id = 'modal-portal';
-        portalRoot.style.position = 'fixed';
-        portalRoot.style.top = '0';
-        portalRoot.style.left = '0';
-        portalRoot.style.width = '100%';
-        portalRoot.style.height = '100%';
-        portalRoot.style.zIndex = '9999';
-        portalRoot.style.pointerEvents = 'none';
-        document.body.appendChild(portalRoot);
-      }
-      portalRef.current = portalRoot;
+    if (typeof window === 'undefined') return;
+
+    let root = document.getElementById('modal-portal');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'modal-portal';
+      root.style.position = 'fixed';
+      root.style.top = '0';
+      root.style.left = '0';
+      root.style.width = '100%';
+      root.style.height = '100%';
+      root.style.zIndex = '9999';
+      // don't disable pointer events on the root; that prevents children from receiving clicks
+      document.body.appendChild(root);
     }
+
+    setPortalRoot(root);
+
+    return () => {
+      // keep the portal root across unmounts; do not remove it here to avoid flicker
+    };
   }, []);
 
-  if (!isOpen || !portalRef.current) {
-    return null;
-  }
+  if (!isOpen || !portalRoot) return null;
 
-  return createPortal(children, portalRef.current);
+  return createPortal(children, portalRoot);
 }
