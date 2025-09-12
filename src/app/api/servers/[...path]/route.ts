@@ -9,8 +9,8 @@ async function proxy(req: NextRequest, path: string[]) {
 
   const backendBase =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    process.env.BACKEND_URL;
+    process.env.NEXT_PUBLIC_NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL;
   const search = req.nextUrl.search;
   const target = `${backendBase}/api/v1/servers/${path.join("/")}${search}`;
 

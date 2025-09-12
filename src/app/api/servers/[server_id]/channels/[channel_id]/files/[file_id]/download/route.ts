@@ -10,7 +10,7 @@ export async function GET(
   if (!session?.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const backend = `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files/${file_id}/download`;
+  const backend = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files/${file_id}/download`;
   const res = await fetch(backend, {
     headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
     redirect: "manual",

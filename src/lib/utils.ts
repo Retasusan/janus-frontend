@@ -9,8 +9,8 @@ export function cn(...inputs: ClassValue[]) {
 export async function withAuthProxy(req: Request, path: string, init?: RequestInit) {
   const backendBase =
     process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
     "http://localhost:8000";
   // 既存の Authorization をそのまま転送
   const headers = new Headers(init?.headers || {});

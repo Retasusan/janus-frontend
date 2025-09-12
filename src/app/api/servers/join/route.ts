@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const apiRes = await fetch(`${process.env.BACKEND_URL}/api/v1/servers/join`, {
+    const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/join`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

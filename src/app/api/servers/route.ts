@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Forward to backend with Bearer token
-  const apiRes = await fetch(`${process.env.BACKEND_URL}/api/v1/servers`, {
+  const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers`, {
     headers: {
       Authorization: `Bearer ${session.tokenSet.accessToken}`,
     },
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const apiRes = await fetch(`${process.env.BACKEND_URL}/api/v1/servers`, {
+  const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

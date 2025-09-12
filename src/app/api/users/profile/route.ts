@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth0 } from "@/app/lib/auth0";
 
-const backendBase = process.env.BACKEND_URL || "http://localhost:8000";
+const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function GET(request: NextRequest) {
   try {

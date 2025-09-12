@@ -13,7 +13,7 @@ export async function POST(
 
   try {
     const apiRes = await fetch(
-      `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/invite`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/servers/${server_id}/invite`,
       {
         method: "POST",
         headers: {
