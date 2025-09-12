@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { BiHash } from "react-icons/bi";
+import ModalPortal from "@/components/ui/ModalPortal";
 import { IoMdAdd } from "react-icons/io";
 import CreateChannelModal from "@/components/channelContent/CreateChannelModal";
 import { CreateChannelRequest, ChannelType } from "@/types/channel";
@@ -190,13 +191,15 @@ export default function ChannelSidebar({
         </div>
       </div>
 
-      {/* チャンネル作成モーダル */}
-      <CreateChannelModal
-        serverId={server.id}
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSubmit={handleCreateChannel}
-      />
+      {/* チャンネル作成モーダルをModalPortalでラップ */}
+      <ModalPortal isOpen={showCreateModal}>
+        <CreateChannelModal
+          serverId={server.id}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateChannel}
+        />
+      </ModalPortal>
     </div>
   );
 }

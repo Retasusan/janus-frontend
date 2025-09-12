@@ -293,47 +293,50 @@ export default function ServerSidebar({
         server={selectedServer}
       />
 
-      {/* コンテキストメニュー */}
+      {/* コンテキストメニューをModalPortalでポータル表示 */}
       {contextMenu && (
-        <>
-          <div 
-            className="fixed inset-0 z-[60]" 
-            onClick={() => setContextMenu(null)}
-          />
-          <div 
-            className="fixed bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-2xl z-[70] py-2 min-w-48"
-            style={{ left: contextMenu.x, top: contextMenu.y }}
-          >
-            <button
-              onClick={() => {
-                setShowServerSettings(contextMenu.server);
-                setContextMenu(null);
-              }}
-              className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
+        <ModalPortal isOpen={true}>
+          <div>
+            <div 
+              className="fixed inset-0" 
+              style={{ zIndex: 12000 }}
+              onClick={() => setContextMenu(null)}
+            />
+            <div 
+              className="fixed bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-2xl py-2 min-w-48"
+              style={{ left: contextMenu.x, top: contextMenu.y, zIndex: 12001 }}
             >
-              <span>⚙️</span>
-              <span>サーバー設定</span>
-            </button>
-            <button
-              onClick={() => {
-                setShowInviteModal(true);
-                setContextMenu(null);
-              }}
-              className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
-            >
-              <span>🔗</span>
-              <span>招待リンク</span>
-            </button>
-            <hr className="border-white/10 my-1" />
-            <button
-              onClick={() => handleDeleteServer(contextMenu.server)}
-              className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center space-x-2"
-            >
-              <span>🗑️</span>
-              <span>サーバーを削除</span>
-            </button>
+              <button
+                onClick={() => {
+                  setShowServerSettings(contextMenu.server);
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
+              >
+                <span>⚙️</span>
+                <span>サーバー設定</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowInviteModal(true);
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2 text-left text-white hover:bg-white/10 flex items-center space-x-2"
+              >
+                <span>🔗</span>
+                <span>招待リンク</span>
+              </button>
+              <hr className="border-white/10 my-1" />
+              <button
+                onClick={() => handleDeleteServer(contextMenu.server)}
+                className="w-full px-4 py-2 text-left text-red-400 hover:bg-red-500/20 flex items-center space-x-2"
+              >
+                <span>🗑️</span>
+                <span>サーバーを削除</span>
+              </button>
+            </div>
           </div>
-        </>
+        </ModalPortal>
       )}
 
       {/* サーバー設定モーダル */}

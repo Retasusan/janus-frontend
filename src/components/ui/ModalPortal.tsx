@@ -15,7 +15,7 @@ export default function ModalPortal({ children, isOpen }: ModalPortalProps) {
     if (typeof window === 'undefined') return;
 
     let root = document.getElementById('modal-portal');
-    if (!root) {
+    if (!root && isOpen) {
       root = document.createElement('div');
       root.id = 'modal-portal';
       root.style.position = 'fixed';
@@ -24,16 +24,23 @@ export default function ModalPortal({ children, isOpen }: ModalPortalProps) {
       root.style.width = '100%';
       root.style.height = '100%';
       root.style.zIndex = '9999';
-      // don't disable pointer events on the root; that prevents children from receiving clicks
       document.body.appendChild(root);
     }
-
     setPortalRoot(root);
 
+    // モーダルを閉じたときはportal rootを削除
+    if (!isOpen && root) {
+      root.parentNode?.removeChild(root);
+      setPortalRoot(null);
+    }
+
+    // クリーンアップ: アンマウント時にportal rootを削除
     return () => {
-      // keep the portal root across unmounts; do not remove it here to avoid flicker
+      const r = document.getElementById('modal-portal');
+      if (r) r.parentNode?.removeChild(r);
+      setPortalRoot(null);
     };
-  }, []);
+  }, [isOpen]);
 
   if (!isOpen || !portalRoot) return null;
 

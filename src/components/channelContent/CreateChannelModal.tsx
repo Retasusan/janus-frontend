@@ -56,8 +56,18 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-2xl mx-4 text-white max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        minWidth: '100vw',
+        zIndex: 9999,
+      }}
+    >
+      <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-2xl mx-4 text-white max-h-[90vh] overflow-y-auto" style={{ boxShadow: '0 8px 32px rgba(80,80,160,0.25)', position: 'relative', zIndex: 10000 }}>
         <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">新しいチャンネルを作成</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
