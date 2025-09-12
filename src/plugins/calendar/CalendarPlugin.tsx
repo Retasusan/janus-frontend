@@ -169,42 +169,42 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">カレンダーを読み込み中...</div>
+      <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="text-gray-300">カレンダーを読み込み中...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-br from-gray-900 to-gray-800">
       {/* ヘッダー */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-300 bg-white shadow-sm">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 bg-gray-800/50 backdrop-blur-sm">
         <div className="flex items-center">
-          <span className="text-gray-500 mr-2">📅</span>
-          <h1 className="text-lg font-semibold text-gray-800">{channel.name}</h1>
+          <span className="text-gray-300 mr-2">📅</span>
+          <h1 className="text-lg font-semibold text-white">{channel.name}</h1>
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-lg"
         >
           イベント作成
         </button>
       </div>
 
       {/* カレンダーナビゲーション */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
-          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+          className="px-3 py-1 border border-white/20 bg-white/10 hover:bg-white/20 text-white rounded transition-colors"
         >
           ←
         </button>
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-semibold text-white">
           {currentDate.getFullYear()}年 {monthNames[currentDate.getMonth()]}
         </h2>
         <button
           onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
-          className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+          className="px-3 py-1 border border-white/20 bg-white/10 hover:bg-white/20 text-white rounded transition-colors"
         >
           →
         </button>
@@ -214,7 +214,7 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
       <div className="flex-1 p-4">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['日', '月', '火', '水', '木', '金', '土'].map(day => (
-            <div key={day} className="p-2 text-center font-semibold text-gray-600">
+            <div key={day} className="p-2 text-center font-semibold text-gray-300">
               {day}
             </div>
           ))}
@@ -224,18 +224,18 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
           {days.map((day, index) => (
             <div
               key={index}
-              className={`min-h-24 p-1 border border-gray-200 ${
-                day ? 'bg-white hover:bg-gray-50' : 'bg-gray-100'
-              }`}
+              className={`min-h-24 p-1 border border-white/10 rounded-lg ${
+                day ? 'bg-gray-800/50 hover:bg-gray-700/50 backdrop-blur-sm' : 'bg-gray-900/50'
+              } transition-colors`}
             >
               {day && (
                 <>
-                  <div className="font-medium text-sm mb-1">{day}</div>
+                  <div className="font-medium text-sm mb-1 text-white">{day}</div>
                   <div className="space-y-1">
                     {getEventsForDay(day).map(event => (
                       <div
                         key={event.id}
-                        className="text-xs p-1 bg-indigo-100 text-indigo-800 rounded truncate"
+                        className="text-xs p-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 rounded truncate"
                         title={event.title}
                       >
                         {event.title}
@@ -251,45 +251,45 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
 
       {/* イベント作成フォーム */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">新しいイベント</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-6 w-full max-w-md mx-4 text-white">
+            <h3 className="text-lg font-semibold mb-4 text-white">新しいイベント</h3>
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   タイトル *
                 </label>
                 <input
                   type="text"
                   value={newEvent.title}
                   onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 transition-colors"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   開始日時
                 </label>
                 <input
                   type="datetime-local"
                   value={newEvent.startDate}
                   onChange={(e) => setNewEvent({...newEvent, startDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 transition-colors"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   終了日時
                 </label>
                 <input
                   type="datetime-local"
                   value={newEvent.endDate}
                   onChange={(e) => setNewEvent({...newEvent, endDate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 transition-colors"
                   required
                 />
               </div>
@@ -300,9 +300,9 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
                     type="checkbox"
                     checked={newEvent.allDay}
                     onChange={(e) => setNewEvent({...newEvent, allDay: e.target.checked})}
-                    className="mr-2"
+                    className="mr-2 accent-purple-500"
                   />
-                  終日イベント
+                  <span className="text-gray-300">終日イベント</span>
                 </label>
               </div>
 
@@ -310,13 +310,13 @@ function CalendarContent({ channel }: { channel: BaseChannel }) {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-300 border border-white/20 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-lg"
                 >
                   作成
                 </button>

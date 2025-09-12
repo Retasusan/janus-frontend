@@ -56,35 +56,41 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h2 className="text-xl font-semibold mb-4">新しいチャンネルを作成</h2>
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        minWidth: '100vw',
+        zIndex: 9999,
+      }}
+    >
+      <div className="bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl p-8 w-full max-w-2xl mx-4 text-white max-h-[90vh] overflow-y-auto" style={{ boxShadow: '0 8px 32px rgba(80,80,160,0.25)', position: 'relative', zIndex: 10000 }}>
+        <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">新しいチャンネルを作成</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* チャンネルタイプ選択 */}
           {!selectedType ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-4">
                 チャンネルタイプを選択
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
                 {availablePlugins.map((plugin) => (
                   <button
                     key={plugin.meta.type}
                     type="button"
                     onClick={() => handleTypeSelect(plugin.meta.type)}
-                    className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-left"
+                    className="p-3 bg-white/5 border border-white/20 rounded-xl hover:bg-white/10 hover:border-purple-400/50 text-left transition-all group flex flex-col items-center text-center"
                   >
-                    <div className="flex items-center space-x-2">
-                      <div style={{ color: plugin.meta.color }}>
-                        {plugin.meta.icon}
-                      </div>
-                      <div>
-                        <div className="font-medium">{plugin.meta.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {plugin.meta.description}
-                        </div>
-                      </div>
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mb-2" style={{ color: plugin.meta.color }}>
+                      {plugin.meta.icon}
+                    </div>
+                    <div className="font-semibold text-white group-hover:text-purple-300 transition-colors text-sm mb-1">{plugin.meta.name}</div>
+                    <div className="text-xs text-gray-400 line-clamp-2">
+                      {plugin.meta.description}
                     </div>
                   </button>
                 ))}
@@ -93,17 +99,17 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
           ) : (
             <>
               {/* 選択されたタイプの表示 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div style={{ color: selectedPlugin?.meta.color }}>
+              <div className="flex items-center justify-between bg-white/5 rounded-xl p-4 mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center" style={{ color: selectedPlugin?.meta.color }}>
                     {selectedPlugin?.meta.icon}
                   </div>
-                  <span className="font-medium">{selectedPlugin?.meta.name}</span>
+                  <span className="font-semibold text-white">{selectedPlugin?.meta.name}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedType(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors"
                 >
                   変更
                 </button>
@@ -111,7 +117,7 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
 
               {/* チャンネル名 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   チャンネル名 *
                 </label>
                 <input
@@ -119,29 +125,29 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
                   value={channelName}
                   onChange={(e) => setChannelName(e.target.value)}
                   placeholder="チャンネル名を入力"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 text-white placeholder-gray-400"
                   required
                 />
               </div>
 
               {/* 説明 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   説明（オプション）
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="チャンネルの説明を入力"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-400 text-white placeholder-gray-400 resize-none"
                 />
               </div>
 
               {/* プラグイン固有の設定フォーム */}
               {selectedPlugin?.CreateForm && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="bg-white/5 rounded-xl p-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
                     詳細設定
                   </label>
                   <selectedPlugin.CreateForm
@@ -154,11 +160,11 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
           )}
 
           {/* ボタン */}
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end space-x-3 pt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-6 py-3 text-gray-300 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 hover:text-white transition-all"
               disabled={isSubmitting}
             >
               キャンセル
@@ -166,7 +172,7 @@ export default function CreateChannelModal({ serverId, isOpen, onClose, onSubmit
             <button
               type="submit"
               disabled={!selectedType || !channelName.trim() || isSubmitting}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all transform hover:-translate-y-1 hover:shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
             >
               {isSubmitting ? '作成中...' : '作成'}
             </button>

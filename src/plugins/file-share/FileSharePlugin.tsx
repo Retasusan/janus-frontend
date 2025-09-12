@@ -235,13 +235,12 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
                                         </div>
                                     </div>
                                 </div>
-                                <a
-                                    href={file.downloadUrl}
-                                    download
-                                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                                >
-                                    ダウンロード
-                                </a>
+                                                                <a
+                                                                    href={`/api/servers/${channel.serverId}/channels/${channel.id}/files/${file.id}/download`}
+                                                                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                                                >
+                                                                    ダウンロード
+                                                                </a>
                             </div>
                         ))}
                     </div>

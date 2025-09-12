@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { BiHash } from "react-icons/bi";
 import ChannelSidebar from "../../components/channelSidebar/ChannelSidebar";
 import ChannelContent from "../../components/channelContent/ChannelContent";
 import Header from "../../components/header/Header";
@@ -75,7 +76,7 @@ export default function RootLayout({
     <div className="h-screen flex flex-col">
       <Header />
 
-      <div className="flex flex-2 overflow-hidden">
+      <div className="flex flex-1 h-full">
         <ServerSidebar
           onSelectServer={setSelectedServer}
           selectedServer={selectedServer}
@@ -84,21 +85,26 @@ export default function RootLayout({
         />
 
         {selectedServer && (
-          <ChannelSidebar 
-            server={selectedServer} 
-            selectedChannel={selectedChannel}
-            onSelectChannel={setSelectedChannel}
-          />
+          <div className="w-64 flex flex-col">
+            <ChannelSidebar 
+              server={selectedServer} 
+              selectedChannel={selectedChannel}
+              onSelectChannel={setSelectedChannel}
+            />
+          </div>
         )}
 
-        <div className="flex-1 bg-gray-200 overflow-hidden">
+        <div className="flex-1 bg-gradient-to-br from-gray-900 to-gray-800">
           {selectedChannel ? (
             <ChannelContent channel={selectedChannel} />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center text-gray-500">
-                <h2 className="text-xl font-semibold mb-2">チャンネルを選択してください</h2>
-                <p>左側のサーバーからチャンネルを選択してください</p>
+              <div className="text-center text-gray-300 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                  <BiHash className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold mb-3 text-white">チャンネルを選択してください</h2>
+                <p className="text-gray-400">左側のサーバーからチャンネルを選択してください</p>
               </div>
             </div>
           )}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import ModalPortal from "../ui/ModalPortal";
 
 type Props = {
   isOpen: boolean;
@@ -44,53 +45,58 @@ export default function JoinServerModal({ isOpen, onClose, onJoinServer }: Props
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-md mx-4 shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-xl">サーバーに参加</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="inviteCode" className="block text-sm font-medium text-gray-700 mb-2">
-                招待コード
-              </label>
-              <input
-                id="inviteCode"
-                type="text"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
-                placeholder="例: abc123def456"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
-                disabled={loading}
-              />
-            </div>
-
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                {error}
+    <ModalPortal isOpen={isOpen}>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ pointerEvents: 'auto' }}>
+        <div className="w-full max-w-2xl bg-gray-800/95 backdrop-blur-sm border border-white/20 rounded-2xl shadow-2xl">
+          <div className="p-8 border-b border-white/10">
+            <h2 className="text-3xl font-bold text-white mb-3">サーバーに参加</h2>
+            <p className="text-gray-400 text-lg">招待コードを入力してサーバーに参加しましょう</p>
+          </div>
+          
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div>
+                <label htmlFor="inviteCode" className="block text-base font-medium text-white mb-4">
+                  招待コード
+                </label>
+                <input
+                  id="inviteCode"
+                  type="text"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="例: abc123def456"
+                  className="w-full px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-400 focus:outline-none transition-colors font-mono text-xl"
+                  disabled={loading}
+                />
               </div>
-            )}
 
-            <div className="flex justify-end space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={loading}
-              >
-                キャンセル
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || !inviteCode.trim()}
-              >
-                {loading ? "参加中..." : "参加"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+              {error && (
+                <div className="text-red-300 text-base bg-red-500/20 border border-red-500/30 p-6 rounded-xl">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-4 pt-6">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={loading}
+                  className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-gray-300 font-medium transition-all disabled:opacity-50 text-lg"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !inviteCode.trim()}
+                  className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 rounded-xl text-white font-medium transition-all transform hover:-translate-y-1 disabled:transform-none disabled:opacity-50 text-lg"
+                >
+                  {loading ? "参加中..." : "参加"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </ModalPortal>
   );
 }

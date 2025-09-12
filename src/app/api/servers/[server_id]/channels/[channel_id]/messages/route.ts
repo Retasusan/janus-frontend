@@ -2,9 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/lib/auth0";
 
 export async function GET(
-  // biome-ignore lint: request is unused but required
   req: NextRequest,
-  context: { params: { server_id: string; channel_id: string } },
+  context: { params: Promise<{ server_id: string; channel_id: string }> },
 ) {
   const { server_id, channel_id } = await context.params;
 
@@ -33,7 +32,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: { server_id: string; channel_id: string } },
+  context: { params: Promise<{ server_id: string; channel_id: string }> },
 ) {
   const { server_id, channel_id } = await context.params;
 

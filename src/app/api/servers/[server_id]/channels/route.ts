@@ -3,7 +3,7 @@ import { auth0 } from "@/app/lib/auth0";
 
 export async function GET(
   _req: NextRequest,
-  context: { params: { server_id: string } },
+  context: { params: Promise<{ server_id: string }> },
 ) {
   const { server_id } = await context.params;
 
@@ -32,7 +32,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: { server_id: string } },
+  context: { params: Promise<{ server_id: string }> },
 ) {
   const { server_id } = await context.params;
 
