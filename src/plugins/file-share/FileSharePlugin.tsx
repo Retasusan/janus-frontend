@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChannelPlugin, ChannelCreateFormProps } from '@/types/plugin';
 import { ChannelType, BaseChannel } from '@/types/channel';
 
@@ -13,6 +13,198 @@ interface FileItem {
     uploadedBy: string;
     uploadedAt: string;
     downloadUrl: string;
+}
+
+// ファイル一覧コンポーネント（分離）
+function FileList({ channel, refreshTrigger }: { channel: BaseChannel; refreshTrigger: number }) {
+    const [files, setFiles] = useState<FileItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchFiles = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(
+                `/api/servers/${channel.serverId}/channels/${channel.id}/files`,
+                { credentials: "include" }
+            );
+            if (res.ok) {
+                const data: FileItem[] = await res.json();
+                setFiles(data);
+            }
+        } catch (error) {
+            console.error('ファイル取得エラー:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [channel.serverId, channel.id]);
+
+    useEffect(() => {
+        fetchFiles();
+    }, [fetchFiles, refreshTrigger]);
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <div className="text-gray-500">ファイルを読み込み中...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-2">
+            {files.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                    <p>まだファイルがアップロードされていません</p>
+                </div>
+            ) : (
+                files.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center space-x-3">
+                            <div className="text-2xl">📄</div>
+                            <div>
+                                <div className="font-medium">{file.filename}</div>
+                                <div className="text-sm text-gray-500">
+                                    {formatFileSize(file.size)} • {file.uploadedBy} • {new Date(file.uploadedAt).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                        <a
+                            href={`/api/servers/${channel.serverId}/channels/${channel.id}/files/${file.id}/download`}
+                            className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        >
+                            ダウンロード
+                        </a>
+                    </div>
+                ))
+            )}
+        </div>
+    );
+}
+
+// ファイルアップロードエリアコンポーネント（分離）
+function FileUploadArea({ channel, onUploadComplete }: {
+    channel: BaseChannel;
+    onUploadComplete: () => void;
+}) {
+    const [uploading, setUploading] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleFileUpload = async (fileList: FileList) => {
+        if (!fileList.length) return;
+
+        setUploading(true);
+        setError(null);
+        try {
+            let uploadSuccess = false;
+            let failedFiles: string[] = [];
+
+            for (const file of Array.from(fileList)) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const res = await fetch(
+                    `/api/servers/${channel.serverId}/channels/${channel.id}/files`,
+                    {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData,
+                    }
+                );
+
+                if (res.ok) {
+                    uploadSuccess = true;
+                } else {
+                    failedFiles.push(file.name);
+                }
+            }
+
+            // アップロードが成功した場合、親コンポーネントに通知
+            if (uploadSuccess) {
+                onUploadComplete();
+            }
+
+            // 失敗したファイルがある場合はエラーメッセージを表示
+            if (failedFiles.length > 0) {
+                setError(`以下のファイルのアップロードに失敗しました: ${failedFiles.join(', ')}`);
+            }
+        } catch (error) {
+            console.error('ファイルアップロードエラー:', error);
+            setError('ファイルアップロード中にエラーが発生しました');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        handleFileUpload(e.dataTransfer.files);
+    };
+
+    return (
+        <>
+            {/* ファイルアップロードエリア */}
+            <div
+                className={`m-4 p-8 border-2 border-dashed rounded-lg text-center ${dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'
+                    }`}
+                onDrop={handleDrop}
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+            >
+                <div className="text-gray-500">
+                    <div className="text-4xl mb-2">📤</div>
+                    <p className="mb-2">ファイルをドラッグ&ドロップするか、クリックして選択</p>
+                    <input
+                        type="file"
+                        multiple
+                        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                        className="hidden"
+                        id="file-upload"
+                        disabled={uploading}
+                    />
+                    <label
+                        htmlFor="file-upload"
+                        className={`inline-block px-4 py-2 rounded-lg cursor-pointer ${uploading
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                            }`}
+                    >
+                        {uploading ? 'アップロード中...' : 'ファイルを選択'}
+                    </label>
+                </div>
+            </div>
+
+            {uploading && (
+                <div className="mx-4 mb-4 p-2 bg-blue-100 text-blue-800 rounded">
+                    アップロード中...
+                </div>
+            )}
+
+            {error && (
+                <div className="mx-4 mb-4 p-2 bg-red-100 text-red-800 rounded">
+                    {error}
+                    <button
+                        onClick={() => setError(null)}
+                        className="ml-2 text-red-600 hover:text-red-800"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+        </>
+    );
 }
 
 // ファイル共有チャンネルの設定フォーム
@@ -86,86 +278,14 @@ function FileShareCreateForm({ onSubmit }: ChannelCreateFormProps) {
     );
 }
 
-// ファイル共有チャンネルのコンテンツコンポーネント
+// ファイル共有チャンネルのメインコンポーネント
 function FileShareContent({ channel }: { channel: BaseChannel }) {
-    const [files, setFiles] = useState<FileItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
-    const [dragOver, setDragOver] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    useEffect(() => {
-        fetchFiles();
-    }, [channel]);
-
-    const fetchFiles = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(
-                `/api/servers/${channel.serverId}/channels/${channel.id}/files`,
-                { credentials: "include" }
-            );
-            if (res.ok) {
-                const data: FileItem[] = await res.json();
-                setFiles(data);
-            }
-        } catch (error) {
-            console.error('ファイル取得エラー:', error);
-        } finally {
-            setLoading(false);
-        }
+    const handleUploadComplete = () => {
+        // ファイル一覧の再取得をトリガー
+        setRefreshTrigger(prev => prev + 1);
     };
-
-    const handleFileUpload = async (fileList: FileList) => {
-        if (!fileList.length) return;
-
-        setUploading(true);
-        try {
-            for (const file of Array.from(fileList)) {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const res = await fetch(
-                    `/api/servers/${channel.serverId}/channels/${channel.id}/files`,
-                    {
-                        method: 'POST',
-                        credentials: 'include',
-                        body: formData,
-                    }
-                );
-
-                if (res.ok) {
-                    const newFile: FileItem = await res.json();
-                    setFiles(prev => [newFile, ...prev]);
-                }
-            }
-        } catch (error) {
-            console.error('ファイルアップロードエラー:', error);
-        } finally {
-            setUploading(false);
-        }
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        setDragOver(false);
-        handleFileUpload(e.dataTransfer.files);
-    };
-
-    const formatFileSize = (bytes: number) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="text-gray-500">ファイルを読み込み中...</div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex flex-col h-full">
@@ -181,70 +301,11 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
             </div>
 
             {/* ファイルアップロードエリア */}
-            <div
-                className={`m-4 p-8 border-2 border-dashed rounded-lg text-center ${dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'
-                    }`}
-                onDrop={handleDrop}
-                onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-            >
-                <div className="text-gray-500">
-                    <div className="text-4xl mb-2">📤</div>
-                    <p className="mb-2">ファイルをドラッグ&ドロップするか、クリックして選択</p>
-                    <input
-                        type="file"
-                        multiple
-                        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                        className="hidden"
-                        id="file-upload"
-                    />
-                    <label
-                        htmlFor="file-upload"
-                        className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 cursor-pointer"
-                    >
-                        ファイルを選択
-                    </label>
-                </div>
-            </div>
-
-            {uploading && (
-                <div className="mx-4 mb-4 p-2 bg-blue-100 text-blue-800 rounded">
-                    アップロード中...
-                </div>
-            )}
+            <FileUploadArea channel={channel} onUploadComplete={handleUploadComplete} />
 
             {/* ファイル一覧 */}
             <div className="flex-1 overflow-auto p-4">
-                {files.length === 0 ? (
-                    <div className="text-center text-gray-500 mt-8">
-                        <p>まだファイルがアップロードされていません</p>
-                    </div>
-                ) : (
-                    <div className="space-y-2">
-                        {files.map((file) => (
-                            <div key={file.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                                <div className="flex items-center space-x-3">
-                                    <div className="text-2xl">📄</div>
-                                    <div>
-                                        <div className="font-medium">{file.filename}</div>
-                                        <div className="text-sm text-gray-500">
-                                            {formatFileSize(file.size)} • {file.uploadedBy} • {new Date(file.uploadedAt).toLocaleString()}
-                                        </div>
-                                    </div>
-                                </div>
-                                                                <a
-                                                                    href={`/api/servers/${channel.serverId}/channels/${channel.id}/files/${file.id}/download`}
-                                                                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                                                                >
-                                                                    ダウンロード
-                                                                </a>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <FileList channel={channel} refreshTrigger={refreshTrigger} />
             </div>
         </div>
     );
