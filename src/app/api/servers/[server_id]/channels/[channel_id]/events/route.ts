@@ -12,7 +12,7 @@ export async function GET(
   }
   const url = new URL(req.url);
   const search = url.searchParams.toString();
-  const apiUrl = `http://localhost:8000/api/v1/servers/${server_id}/channels/${channel_id}/events${search ? `?${search}` : ""}`;
+  const apiUrl = `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels/${channel_id}/events${search ? `?${search}` : ""}`;
   const res = await fetch(apiUrl, {
     headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
   });
@@ -41,7 +41,7 @@ export async function POST(
   const payload = { event: mapped };
 
   const res = await fetch(
-    `http://localhost:8000/api/v1/servers/${server_id}/channels/${channel_id}/events`,
+    `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels/${channel_id}/events`,
     {
       method: "POST",
       headers: {

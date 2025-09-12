@@ -11,7 +11,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const res = await fetch(
-    `http://localhost:8000/api/v1/servers/${server_id}/channels/${channel_id}/files`,
+    `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files`,
     { headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` } },
   );
   const data = await res.json();
@@ -29,7 +29,7 @@ export async function POST(
   }
   const formData = await req.formData();
   const res = await fetch(
-    `http://localhost:8000/api/v1/servers/${server_id}/channels/${channel_id}/files`,
+    `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels/${channel_id}/files`,
     {
       method: "POST",
       headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },

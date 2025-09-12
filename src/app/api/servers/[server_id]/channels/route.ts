@@ -14,7 +14,7 @@ export async function GET(
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/v1/servers/${server_id}/channels`,
+      `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export async function POST(
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/v1/servers/${server_id}/channels`,
+      `${process.env.BACKEND_URL}/api/v1/servers/${server_id}/channels`,
       {
         method: "POST",
         headers: {
