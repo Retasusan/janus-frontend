@@ -62,9 +62,3 @@ export async function POST(
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-// WebSocket通知関数（実装例）
-async function notifyClients(serverId: string, channelId: string, messageData: any) {
-  // WebSocketサーバーに新しいメッセージを送信
-  // または外部のリアルタイム通信サービスを使用
-}
