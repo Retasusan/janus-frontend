@@ -75,7 +75,7 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
               <Box className="w-12 h-12 text-orange-200" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-2xl p-6 text-white shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
@@ -85,7 +85,7 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
               <AlertTriangle className="w-12 h-12 text-yellow-200" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
@@ -95,10 +95,10 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
               <Layers className="w-12 h-12 text-green-200" />
             </div>
           </div>
-          
+
           <div className="flex flex-col space-y-3">
-            <button 
-              onClick={() => {/* Add item modal */}} 
+            <button
+              onClick={() => {/* Add item modal */ }}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-white font-medium transition-all transform hover:-translate-y-1 flex items-center justify-center space-x-2"
             >
               <Plus className="w-5 h-5" />
@@ -110,16 +110,16 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
             </button>
           </div>
         </div>
-        
+
         {/* フィルターと検索 */}
         <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input 
-              type="text" 
-              placeholder="アイテム検索..." 
+            <input
+              type="text"
+              placeholder="アイテム検索..."
               className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors"
             />
-            <select 
+            <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:border-orange-400 focus:outline-none transition-colors"
@@ -145,29 +145,32 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">新しいアイテムを追加</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                placeholder="アイテム名" 
+              <input
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="アイテム名"
               />
-              <input 
-                type="number" 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors" 
-                value={quantity} 
-                onChange={(e) => setQuantity(Number(e.target.value))} 
-                placeholder="数量"
-              />
-              <input 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors" 
-                value={location} 
-                onChange={(e) => setLocation(e.target.value)} 
-                placeholder="保管場所（任意）" 
+              <div className="flex items-center bg-white/10 border border-white/20 rounded-xl overflow-hidden focus-within:border-orange-400 transition-colors">
+                <input
+                  type="number"
+                  className="flex-1 bg-transparent px-4 py-3 text-white placeholder-gray-400 focus:outline-none"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  placeholder="数量"
+                />
+                <span className="px-3 text-gray-400 text-sm">個</span>
+              </div>
+              <input
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-orange-400 focus:outline-none transition-colors"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="保管場所（任意）"
               />
             </div>
             <div className="flex justify-end mt-4">
-              <button 
-                onClick={create} 
+              <button
+                onClick={create}
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 px-6 py-3 rounded-xl font-medium text-white transition-all transform hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
@@ -190,8 +193,8 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredItems.map((item) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer group transform hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -199,11 +202,10 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
                         <h4 className="text-lg font-semibold text-white">{item.name}</h4>
                         <p className="text-sm text-gray-400">{item.category || 'その他'}</p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        (item.quantity || 0) < 5 
-                          ? 'bg-red-600/30 text-red-300' 
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${(item.quantity || 0) < 5
+                          ? 'bg-red-600/30 text-red-300'
                           : 'bg-orange-600/30 text-orange-300'
-                      }`}>
+                        }`}>
                         {item.quantity || 0} 個
                       </span>
                     </div>
