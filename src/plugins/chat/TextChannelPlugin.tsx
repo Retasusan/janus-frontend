@@ -16,6 +16,87 @@ interface Message {
   is_own?: boolean;
 }
 
+// 日付フォーマット用のヘルパー関数
+const formatMessageTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return '時刻不明';
+    }
+    return date.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('日付フォーマットエラー:', error, dateString);
+    return '時刻不明';
+  }
+};
+
+// 日付表示用のヘルパー関数（詳細版）
+const formatMessageDateTime = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return '日時不明';
+    }
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // 今日のメッセージ
+    if (messageDate.getTime() === today.getTime()) {
+      return `今日 ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    // 昨日のメッセージ
+    else if (messageDate.getTime() === yesterday.getTime()) {
+      return `昨日 ${date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    // それ以前のメッセージ
+    else {
+      return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  } catch (error) {
+    console.error('日付フォーマットエラー:', error, dateString);
+    return '日時不明';
+  }
+};
+
+// ユーザー名を取得するヘルパー関数
+const getDisplayName = (msg: any) => {
+  console.log('getDisplayName called with:', msg); // デバッグ用
+
+  // 優先順位を調整
+  if (msg.author_name) return msg.author_name;
+  if (msg.author?.display_name) return msg.author.display_name;
+  if (msg.author?.name) return msg.author.name;
+  if (typeof msg.author === 'string' && msg.author && msg.author !== 'Unknown User') return msg.author;
+  if (msg.author?.email) return msg.author.email;
+  return 'Unknown User';
+};
+
+// アバターの初期文字を取得するヘルパー関数
+const getAvatarInitial = (msg: any) => {
+  const name = getDisplayName(msg);
+  return name.charAt(0).toUpperCase();
+};
+
+// アバター画像URLを取得するヘルパー関数
+const getAvatarUrl = (msg: any) => {
+  return msg.author_avatar || msg.author?.avatar_url || msg.author?.picture || null;
+};
+
 // テキストチャンネルのコンテンツコンポーネント
 function TextChannelContent({ channel }: { channel: BaseChannel }) {
   const [messages, setMessages] = useState<any[]>([]);
@@ -26,7 +107,9 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
   const [replyTo, setReplyTo] = useState<any | null>(null);
   const [showDropdown, setShowDropdown] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<string>("");
+  const [currentUserData, setCurrentUserData] = useState<any>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [showDetailedTime, setShowDetailedTime] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const initialLoadRef = useRef<boolean>(true);
@@ -38,9 +121,19 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           const userData = await res.json();
-          const userName = userData.name || userData.email || userData.sub || 'You';
+          console.log('Full user data:', userData); // デバッグ用
+
+          // 複数のフィールドをチェックしてユーザー名を決定
+          const userName = userData.name ||
+            userData.nickname ||
+            userData.email ||
+            userData.preferred_username ||
+            userData.sub ||
+            'You';
+
           console.log('Current user set to:', userName); // デバッグ用
           setCurrentUser(userName);
+          setCurrentUserData(userData);
         }
       } catch (error) {
         console.error('Failed to fetch current user:', error);
@@ -54,32 +147,50 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
       const isInitial = initialLoadRef.current;
       if (isInitial) setLoading(true);
       setError(null);
-      // guard: only fetch messages for text channels
+
       if (channel.type !== ChannelType.TEXT) {
         setMessages([]);
         if (isInitial) setLoading(false);
         return;
       }
-      // currentUserが設定されるまで待つ
+
       if (!currentUser) {
         if (isInitial) setLoading(false);
         return;
       }
+
       try {
         const res = await fetch(
           `/api/servers/${channel.serverId}/channels/${channel.id}/messages`,
           { credentials: "include" }
         );
+
         if (res.ok) {
           const data: any[] = await res.json();
           console.log('Messages received:', data); // デバッグ用
           console.log('Current user for comparison:', currentUser); // デバッグ用
-          // メッセージに自分のものかどうかの情報を追加
+
+          // メッセージに自分のものかどうかの情報を追加し、日付を正規化
           const messagesWithOwnership = data.map(msg => {
-            const isOwn = msg.author === currentUser || msg.author_name === currentUser;
-            console.log(`Message from ${msg.author || msg.author_name}, is_own: ${isOwn}`); // デバッグ用
+            // より詳細な作成者情報の処理
+            const authorName = getDisplayName(msg);
+
+            // 自分のメッセージかどうかの判定（複数の条件でチェック）
+            const isOwn = msg.author === currentUser ||
+              msg.author_name === currentUser ||
+              (msg.author?.name && msg.author.name === currentUser) ||
+              (msg.author?.email && msg.author.email === currentUser) ||
+              (currentUserData?.email && msg.author === currentUserData.email) ||
+              (currentUserData?.sub && msg.author === currentUserData.sub);
+
+            console.log(`Message from ${authorName} (raw author: ${JSON.stringify(msg.author)}, author_name: ${msg.author_name}), current user: ${currentUser}, is_own: ${isOwn}`); // デバッグ用
+
+            // 日付フィールドの正規化
+            const normalizedCreatedAt = msg.created_at || msg.createdAt || new Date().toISOString();
+
             return {
               ...msg,
+              created_at: normalizedCreatedAt,
               is_own: isOwn
             };
           });
@@ -103,7 +214,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
     fetchMessages();
 
     return () => clearInterval(interval);
-  }, [channel, currentUser]);
+  }, [channel, currentUser, currentUserData]);
 
   // メッセージが更新されたら自動スクロールが有効な場合のみ最下部にスクロール
   useEffect(() => {
@@ -120,7 +231,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
+
       // ユーザーが手動でスクロールして底から離れた場合は自動スクロールを無効に
       if (!isNearBottom && autoScroll) {
         setAutoScroll(false);
@@ -137,7 +248,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!messageInput.trim() || sending) return;
 
     setSending(true);
@@ -158,11 +269,36 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
       );
 
       if (res.ok) {
-        const newMessage: any = await res.json();
-        console.log('Message sent:', newMessage); // デバッグ用
-        console.log('Reply to:', replyTo?.id); // デバッグ用
-        console.log('Setting is_own to true for new message'); // デバッグ用
-        setMessages((prev) => [...prev, { ...newMessage, is_own: true }]);
+        const responseData = await res.json();
+        console.log('Message send response:', responseData); // デバッグ用
+
+        // POSTレスポンスが単一メッセージか全メッセージリストかを判定
+        if (Array.isArray(responseData)) {
+          // 全メッセージリストが返された場合（修正済みAPI）
+          const messagesWithOwnership = responseData.map(msg => {
+            const authorName = getDisplayName(msg);
+            const isOwn = msg.author === currentUser ||
+              msg.author_name === currentUser ||
+              (currentUserData?.email && msg.author === currentUserData.email) ||
+              (currentUserData?.sub && msg.author === currentUserData.sub);
+            const normalizedCreatedAt = msg.created_at || msg.createdAt || new Date().toISOString();
+            return {
+              ...msg,
+              created_at: normalizedCreatedAt,
+              is_own: isOwn
+            };
+          });
+          setMessages(messagesWithOwnership);
+        } else {
+          // 単一メッセージが返された場合（従来のAPI）
+          const newMessage = {
+            ...responseData,
+            created_at: responseData.created_at || responseData.createdAt || new Date().toISOString(),
+            is_own: true
+          };
+          setMessages((prev) => [...prev, newMessage]);
+        }
+
         setMessageInput("");
         setReplyTo(null);
       } else {
@@ -239,21 +375,26 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
           <span className="mr-2">#</span>
           {channel.name}
         </h3>
-        <button
-          onClick={() => setAutoScroll(!autoScroll)}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-            autoScroll 
-              ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
+        <div className="flex items-center space-x-4">
+          {/* 現在のユーザー表示（デバッグ用） */}
+          <span className="text-xs text-gray-400">
+            User: {currentUser}
+          </span>
+          <button
+            onClick={() => setAutoScroll(!autoScroll)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${autoScroll
+              ? 'bg-green-500/20 text-green-400 border border-green-400/30'
               : 'bg-red-500/20 text-red-400 border border-red-400/30'
-          }`}
-          title={autoScroll ? '自動スクロール: 有効' : '自動スクロール: 無効'}
-        >
-          {autoScroll ? '🔄 自動' : '⏸️ 手動'}
-        </button>
+              }`}
+            title={autoScroll ? '自動スクロール: 有効' : '自動スクロール: 無効'}
+          >
+            {autoScroll ? '🔄 自動' : '⏸️ 手動'}
+          </button>
+        </div>
       </div>
 
       {/* メッセージエリア */}
-      <div 
+      <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4"
       >
@@ -272,7 +413,10 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
         ) : (
           messages.map((msg) => {
             const repliedMsg = msg.reply_to ? getRepliedMessage(msg.reply_to) : null;
-            
+            const displayName = getDisplayName(msg);
+            const avatarUrl = getAvatarUrl(msg);
+            const avatarInitial = getAvatarInitial(msg);
+
             return (
               <div
                 key={msg.id}
@@ -281,12 +425,12 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                 {/* アバター（左側メッセージのみ） */}
                 {!msg.is_own && (
                   <Avatar className="w-10 h-10 mr-3 mt-1 flex-shrink-0">
-                    <AvatarImage 
-                      src={msg.author?.avatar_url || msg.author_avatar} 
-                      alt={msg.author?.display_name || msg.author_name || msg.author} 
+                    <AvatarImage
+                      src={avatarUrl}
+                      alt={displayName}
                     />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm">
-                      {((msg.author?.display_name || msg.author_name || msg.author || 'U').toString())[0]?.toUpperCase() || 'U'}
+                      {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -297,13 +441,13 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                     <div className="mb-2 pl-3 border-l-2 border-purple-400 bg-white/5 rounded-r-lg p-2">
                       <div className="flex items-center space-x-2 mb-1">
                         <Avatar className="w-4 h-4">
-                          <AvatarImage src={repliedMsg.author_avatar} alt={repliedMsg.author} />
+                          <AvatarImage src={getAvatarUrl(repliedMsg)} alt={getDisplayName(repliedMsg)} />
                           <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs">
-                            {((repliedMsg.author || 'U').toString())[0]?.toUpperCase() || 'U'}
+                            {getAvatarInitial(repliedMsg)}
                           </AvatarFallback>
                         </Avatar>
                         <p className="text-xs text-gray-400">
-                          返信先: <span className="text-purple-300 font-medium">{repliedMsg.author}</span>
+                          返信先: <span className="text-purple-300 font-medium">{getDisplayName(repliedMsg)}</span>
                         </p>
                       </div>
                       <p className="text-sm text-gray-300 truncate bg-white/5 px-2 py-1 rounded">
@@ -311,26 +455,22 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                       </p>
                     </div>
                   )}
-                  
+
                   {/* メッセージバブル */}
                   <div
-                    className={`px-4 py-3 rounded-2xl ${
-                      msg.is_own
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white'
-                        : 'bg-white/10 backdrop-blur-sm border border-white/20 text-white'
-                    }`}
+                    className={`px-4 py-3 rounded-2xl ${msg.is_own
+                      ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white'
+                      : 'bg-white/10 backdrop-blur-sm border border-white/20 text-white'
+                      }`}
                   >
                     {!msg.is_own && (
                       <p className="text-xs font-semibold mb-1 text-gray-300">
-                        {msg.author?.display_name || msg.author_name || msg.author || 'Unknown User'}
+                        {displayName}
                       </p>
                     )}
                     <p className="break-words">{msg.content}</p>
                     <p className={`text-xs mt-1 ${msg.is_own ? 'text-white/70' : 'text-gray-400'}`}>
-                      {new Date(msg.created_at).toLocaleTimeString('ja-JP', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      {formatMessageTime(msg.created_at)}
                     </p>
                   </div>
 
@@ -343,7 +483,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                     >
                       <span className="text-gray-300">↵</span>
                     </button>
-                    
+
                     {msg.is_own && (
                       <div className="relative">
                         <button
@@ -352,7 +492,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                         >
                           <span className="text-gray-300">⋮</span>
                         </button>
-                        
+
                         {showDropdown === msg.id && (
                           <div className="absolute right-0 mt-2 w-32 bg-gray-800 border border-white/20 rounded-lg shadow-lg z-10">
                             <button
@@ -372,9 +512,9 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
                 {/* アバター（右側メッセージのみ） */}
                 {msg.is_own && (
                   <Avatar className="w-10 h-10 ml-3 mt-1 flex-shrink-0">
-                    <AvatarImage src={msg.author_avatar} alt={msg.author || msg.author_name} />
+                    <AvatarImage src={avatarUrl} alt={displayName} />
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm">
-                      {((msg.author || msg.author_name || 'U').toString())[0]?.toUpperCase() || 'U'}
+                      {avatarInitial}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -391,14 +531,14 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
           <div className="mb-3 p-3 bg-purple-500/20 border border-purple-400/30 rounded-lg flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <Avatar className="w-6 h-6">
-                <AvatarImage src={replyTo.author_avatar} alt={replyTo.author} />
+                <AvatarImage src={getAvatarUrl(replyTo)} alt={getDisplayName(replyTo)} />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xs">
-                  {((replyTo.author || 'U').toString())[0]?.toUpperCase() || 'U'}
+                  {getAvatarInitial(replyTo)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-xs text-purple-300">
-                  返信先: <span className="font-medium">{replyTo.author}</span>
+                  返信先: <span className="font-medium">{getDisplayName(replyTo)}</span>
                 </p>
                 <p className="text-sm text-white truncate max-w-md">{replyTo.content}</p>
               </div>
@@ -412,7 +552,7 @@ function TextChannelContent({ channel }: { channel: BaseChannel }) {
             </button>
           </div>
         )}
-        
+
         <form onSubmit={handleSendMessage} className="flex space-x-3">
           <input
             type="text"
