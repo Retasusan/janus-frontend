@@ -37,7 +37,7 @@ function FileShareCreateForm({ onSubmit }: ChannelCreateFormProps) {
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-200 mb-1">
                     最大ファイルサイズ (MB)
                 </label>
                 <input
@@ -51,7 +51,7 @@ function FileShareCreateForm({ onSubmit }: ChannelCreateFormProps) {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                     許可するファイルタイプ（未選択の場合は全て許可）
                 </label>
                 <div className="space-y-2">
