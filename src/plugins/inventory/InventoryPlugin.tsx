@@ -139,8 +139,8 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
         </div>
       </div>
 
-      <div className="flex-1 p-6 overflow-y-auto">
-        <div className="space-y-6">
+      <div className="flex-1 px-6 py-3 overflow-y-auto">
+        <div className="space-y-3">
           {/* アイテム追加フォーム */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">新しいアイテムを追加</h3>
@@ -183,7 +183,7 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">アイテム一覧</h3>
             {filteredItems.length === 0 ? (
-              <div className="text-center text-gray-400 py-12">
+              <div className="text-center text-gray-400">
                 <Package className="w-16 h-16 mx-auto mb-4 text-gray-500" />
                 <p className="text-xl font-semibold">
                   {selectedCategory ? `「${selectedCategory}」カテゴリにアイテムがありません` : 'アイテムがありません'}
@@ -203,8 +203,8 @@ export function InventoryContent({ channel }: { channel: BaseChannel }) {
                         <p className="text-sm text-gray-400">{item.category || 'その他'}</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${(item.quantity || 0) < 5
-                          ? 'bg-red-600/30 text-red-300'
-                          : 'bg-orange-600/30 text-orange-300'
+                        ? 'bg-red-600/30 text-red-300'
+                        : 'bg-orange-600/30 text-orange-300'
                         }`}>
                         {item.quantity || 0} 個
                       </span>
