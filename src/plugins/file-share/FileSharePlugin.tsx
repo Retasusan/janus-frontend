@@ -225,11 +225,11 @@ function FileShareContent({ channel }: { channel: BaseChannel }) {
                 ) : (
                     <div className="space-y-2">
                         {files.map((file) => (
-                            <div key={file.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <div key={file.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-200">
                                 <div className="flex items-center space-x-3">
                                     <div className="text-2xl">📄</div>
                                     <div>
-                                        <div className="font-medium">{file.filename}</div>
+                                        <div className="font-medium text-gray-500">{file.filename}</div>
                                         <div className="text-sm text-gray-500">
                                             {formatFileSize(file.size)} • {file.uploadedBy} • {new Date(file.uploadedAt).toLocaleString()}
                                         </div>
