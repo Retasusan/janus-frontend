@@ -69,7 +69,7 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
               <Wallet className="w-12 h-12 text-green-200" />
             </div>
           </div>
-          
+
           {/* 収入カード */}
           <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-6 text-white shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between">
@@ -80,7 +80,7 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
               <TrendingUp className="w-10 h-10 text-blue-200" />
             </div>
           </div>
-          
+
           {/* 支出カード */}
           <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-6 text-white shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between">
@@ -100,37 +100,37 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">新しい記録を追加</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <select 
-                value={kind} 
-                onChange={(e)=>setKind(e.target.value)} 
+              <select
+                value={kind}
+                onChange={(e) => setKind(e.target.value)}
                 className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors"
               >
-                <option value="expense" className="text-gray-800">💸 出費</option>
+                <option value="expense" className="text-gray-800">💸 支出</option>
                 <option value="income" className="text-gray-800">💰 収入</option>
               </select>
-              <input 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors" 
-                value={title} 
-                onChange={(e)=>setTitle(e.target.value)} 
-                placeholder="タイトル" 
+              <input
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="タイトル"
               />
-              <input 
-                type="number" 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors" 
-                value={amount} 
-                onChange={(e)=>setAmount(Number(e.target.value))} 
+              <input
+                type="number"
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
                 placeholder="金額"
               />
-              <input 
-                type="date" 
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors" 
-                value={date} 
-                onChange={(e)=>setDate(e.target.value)} 
+              <input
+                type="date"
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-emerald-400 focus:outline-none transition-colors"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
               />
             </div>
             <div className="flex justify-end mt-4">
-              <button 
-                onClick={create} 
+              <button
+                onClick={create}
                 className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 px-6 py-3 rounded-xl font-medium text-white transition-all transform hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
@@ -143,7 +143,7 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">記録履歴</h3>
             {entries.length === 0 ? (
-              <div className="text-center text-gray-400 py-12">
+              <div className="text-center text-gray-400 py-6">
                 <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-500" />
                 <p className="text-xl font-semibold">記録がありません</p>
                 <p className="text-gray-400">最初の収支記録を追加してください</p>
@@ -151,8 +151,8 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {entries.slice().reverse().map((entry) => (
-                  <div 
-                    key={entry.id} 
+                  <div
+                    key={entry.id}
                     className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer group"
                   >
                     <div className="flex justify-between items-center">
@@ -187,6 +187,6 @@ function BudgetContent({ channel }: { channel: BaseChannel }) {
 }
 
 export const budgetPlugin: ChannelPlugin = {
-  meta: { type: ChannelType.BUDGET, name: '予算管理', description: '出費と収入の記録', icon: <span>💴</span>, color: '#f97316' },
+  meta: { type: ChannelType.BUDGET, name: '予算管理', description: '支出と収入の記録', icon: <span>💴</span>, color: '#f97316' },
   ContentComponent: BudgetContent,
 };
