@@ -85,9 +85,9 @@ export default function RootLayout({
         />
 
         {selectedServer && (
-          <div className="w-64 flex flex-col">
-            <ChannelSidebar 
-              server={selectedServer} 
+          <div className="w-64 flex flex-col bg-gray-800">
+            <ChannelSidebar
+              server={selectedServer}
               selectedChannel={selectedChannel}
               onSelectChannel={setSelectedChannel}
             />
